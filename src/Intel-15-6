@@ -1,0 +1,79 @@
+#
+# An event file in special format for performance counting events that
+# can be counted on processors of type: vendor Intel, family 15, model 6.
+# There is a max number of register types used by Arum to construct the
+# event lists.  This max number is defined in Arch.h.  In the event 
+# specification a register index is a number between 0 and (MAX - 1).  These
+# indices indicate the register type.  For example, in the architecture
+# this file pertains to, there are three types of registers used in 
+# performance counting: PMCs, ESCRs, and CCCRs.  Each of these types maps to
+# an index in a register array, as follows PMCS:0, ESCRs:1, CCCRs:2. 
+# The specification for a register is given in Events.h.  A register
+# contains five parts: name, number, address, associates, and a pointer to
+# the next register that can be used by a specific event.  Associates are
+# other registers associated with configuring performance counters for a 
+# specific event.
+#
+# Example of an event and its registers and associations:
+# global_power_events is an event that can be counted by this architecture.
+# The entry point register index for configuring this event is ESCRs (index 1).
+# global_power_events has two ESCRs that can be used: MSR_FSB_ESCR0 and
+# MSR_FSB_ESCR1. Both of these ESCRs have two associated PMCs, and each of the
+# PMCs has one associated CCCR.
+#
+# This event is specified in this file using a nested format where items
+# at the same nesting level are successive items in a list, and indentation
+# indicates association: where the indented item is an associate of the first
+# item found above it at one nesting level less deep.  Because associates are 
+# registers, we get several levels of nesting.  The general format for this
+# architecture is:
+#
+# eventName1                                       //first event
+#	rIndex:name/number/addr                    //An ESCR entry point register
+#		rIndex:name/number/addr            //associate PMC to above ESCR
+#			rIndex:name/number/addr    //associate CCCR to above PMC
+#		rIndex:name/number/addr      i     //2nd associate PMC to above ESCR
+#			rIndex:name/number/addr    //associate CCCR to above PMC
+#       rIndex:name/number/addr                    //A second ESCR entry point register
+#               rIndex:name/number/addr            //associate PMC to above ESCR
+#                       rIndex:name/number/addr    //associate CCCR to above PMC
+#               rIndex:name/number/addr      i     //2nd associate PMC to above ESCR
+#                       rIndex:name/number/addr    //associate CCCR to above PMC
+#	
+# eventName2                                       //next event
+# 	...
+#       	...
+#			...
+# ...                                             //subsequent events
+#
+#
+# the following events are from the Intel Architecture Manual:
+# Intel 64 and IA-32 Architectures Software Developer's Manual, Vol 3
+#
+# Non-Retirement counting Events from Table A-5 in appendix A of Vol. 3
+!global_power_events
+r1:MSR_FSB_ESCR0/6/342h$$$r0:MSR_BPU_COUNTER0/0/300h$$$r2:MSR_BPU_CCCR0/0/360h
+r1:MSR_FSB_ESCR0/6/342h$$$r0:MSR_BPU_COUNTER1/1/301h$$$r2:MSR_BPU_CCCR1/1/361h
+r1:MSR_FSB_ESCR1/6/343h$$$r0:MSR_BPU_COUNTER2/2/302h$$$r2:MSR_BPU_CCCR2/2/362h
+r1:MSR_FSB_ESCR1/6/343h$$$r0:MSR_BPU_COUNTER3/3/303h$$$r2:MSR_BPU_CCCR3/3/363h
+
+# At-Retirement counting Events from Table A-6 in appendix A of Vol. 3
+!instr_retired
+r1:MSR_CRU_ESCR0/4/3B8h$$$r0:MSR_IQ_COUNTER0/12/30Ch$$$r2:MSR_IQ_CCCR0/12/36Ch
+r1:MSR_CRU_ESCR0/4/3B8h$$$r0:MSR_IQ_COUNTER1/13/30Dh$$$r2:MSR_IQ_CCCR1/13/36Dh
+r1:MSR_CRU_ESCR0/4/3B8h$$$r0:MSR_IQ_COUNTER4/16/310h$$$r2:MSR_IQ_CCCR4/16/370h
+r1:MSR_CRU_ESCR1/4/3B9h$$$r0:MSR_IQ_COUNTER2/14/30Eh$$$r2:MSR_IQ_CCCR2/14/36Eh
+r1:MSR_CRU_ESCR1/4/3B9h$$$r0:MSR_IQ_COUNTER3/15/30Fh$$$r2:MSR_IQ_CCCR3/15/36Fh
+r1:MSR_CRU_ESCR1/4/3B9h$$$r0:MSR_IQ_COUNTER5/17/311h$$$r2:MSR_IQ_CCCR5/17/371h
+
+
+## Events from Table A-7 in appendix A of Vol. 3
+!instr_completed
+r1:MSR_CRU_ESCR0/4/3B8h$$$r0:MSR_IQ_COUNTER0/12/30Ch$$$r2:MSR_IQ_CCCR0/12/36Ch
+r1:MSR_CRU_ESCR0/4/3B8h$$$r0:MSR_IQ_COUNTER1/13/30Dh$$$r2:MSR_IQ_CCCR1/13/36Dh
+r1:MSR_CRU_ESCR0/4/3B8h$$$r0:MSR_IQ_COUNTER4/16/310h$$$r2:MSR_IQ_CCCR4/16/370h
+r1:MSR_CRU_ESCR1/4/3B9h$$$r0:MSR_IQ_COUNTER2/14/30Eh$$$r2:MSR_IQ_CCCR2/14/36Eh
+r1:MSR_CRU_ESCR1/4/3B9h$$$r0:MSR_IQ_COUNTER3/15/30Fh$$$r2:MSR_IQ_CCCR3/15/36Fh
+r1:MSR_CRU_ESCR1/4/3B9h$$$r0:MSR_IQ_COUNTER5/17/311h$$$r2:MSR_IQ_CCCR5/17/371h
+
+

@@ -1,0 +1,7 @@
+# Object files
+*.o
+
+# Build products
+/byHand-parse-test/Arum
+/hwCtr-test/test-module
+
