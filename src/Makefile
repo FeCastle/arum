@@ -3,7 +3,8 @@ obj-m := HwCtr.o
 # SRY	= Interrupts.tab.y
 # SRL	= Interrupts.lex.l
 ##SRC	= Main.C CpuId.C ResourceUsage.C Utilities.C $(SRY:.y=.C) $(SRL:.l=.C)
-SRC	= Arum.C Events.C Arch.C CpuId.C ResourceUsage.C Utilities.C Counters.C $(SRY:.y=.C) $(SRL:.l=.C)
+## Don't build "Main".  The "Main" is in Arum.C 
+SRC	= Arum.C CpuId.C Events.C Arch.C ResourceUsage.C Utilities.C Counters.C $(SRY:.y=.C) $(SRL:.l=.C)
 HDR	= $(SRC:.C=.h) defs.h
 OBJ	= $(SRC:.C=.o)
 ##LIBDIR	= ../lib
@@ -30,8 +31,14 @@ clean:  rmexe rmobj
 #	$(RM) Interrupts.tab.h
 #	$(RM) Interrupts.tab.C
 
+## POSSIBLE DEBUG FLAGS
+##    -DDEBUG_CPU  - Adds printf to CpuId module
+##    -DDEBUG_COUNT - Adds printf to Counters module
+DEBUG_FLAGS = -DDEBUG_CPU
+
 ##CXXFLAGS=-O3 $(INC)
-CXXFLAGS=-O3
+CXXFLAGS=-O3 $(DEBUG_FLAGS)
+
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $<
 

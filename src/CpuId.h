@@ -55,6 +55,7 @@ private:
     void doBrandString();       // get the brand string if brand id is 0
     void doCpuidIntelArch();    // get performance counter info for architecural
                                 //   capabilities
+    void printReg(const char *reg, int regVal);
 };
 
 #endif
