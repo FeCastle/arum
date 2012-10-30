@@ -1,7 +1,9 @@
 # Object files
 *.o
+*.a
 
 # Build products
-/byHand-parse-test/Arum
-/hwCtr-test/test-module
+src/Arum
+tests/EventTest
+tests/CounterTest
 
