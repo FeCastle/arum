@@ -12,6 +12,7 @@ OBJ	= $(SRC:.C=.o)
 ##LIB	= timer
 ##INC	= -I $(INCDIR)
 EXE	= Arum
+ARCHIVE = libarum.a
 
 RM	= /bin/rm
 MV	= /bin/mv
@@ -21,7 +22,7 @@ SED	= /usr/bin/sed
 
 EXA	= $(EX1) $(EX2) $(EX3) $(EX4) $(EX5) $(EX6)
 
-all: $(EXE)
+all: $(ARCHIVE) $(EXE)
 
 clean:  rmexe rmobj
 
@@ -57,15 +58,11 @@ CXXFLAGS=-O3 $(DEBUG_FLAGS)
 	$(SED) -e s/yy/$(<:.tab.y=)_/g -e s/y.tab.c/$</g y.tab.h > $(<:.y=).h
 	$(RM)  y.tab.c y.tab.h
 
-##$(EXE):	$(OBJ)
-##	$(CXX) -o $(EXE) $(CXXFLAGS) $(OBJ) -L $(LIBDIR) -l $(LIB)
-##	$(RM) -rf $(EXA)
-##	for i in $(EXA) ; do /bin/ln $(EXE) $$i ; done
+$(EXE):	$(ARCHIVE)
+	$(CXX) -o $(EXE) $(CXXFLAGS) $(ARCHIVE)
 
-$(EXE):	$(OBJ)
-	$(CXX) -o $(EXE) $(CXXFLAGS) $(OBJ)
-	# $(RM) -rf $(EXA)
-	# for i in $(EXA) ; do /bin/ln $(EXE) $$i ; done
+$(ARCHIVE): $(OBJ)
+	ar -ruv $(ARCHIVE) $(OBJ)
 
 $(OBJ):	$(HDR)
 
