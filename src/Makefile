@@ -3,7 +3,8 @@ obj-m := HwCtr.o
 # SRY	= Interrupts.tab.y
 # SRL	= Interrupts.lex.l
 ##SRC	= Main.C CpuId.C ResourceUsage.C Utilities.C $(SRY:.y=.C) $(SRL:.l=.C)
-SRC	= Arum.C Events.C Arch.C CpuId.C ResourceUsage.C Utilities.C Counters.C $(SRY:.y=.C) $(SRL:.l=.C)
+## Don't build "Main".  The "Main" is in Arum.C 
+SRC	= Arum.C CpuId.C Events.C Arch.C ResourceUsage.C Utilities.C Counters.C $(SRY:.y=.C) $(SRL:.l=.C)
 HDR	= $(SRC:.C=.h) defs.h
 OBJ	= $(SRC:.C=.o)
 ##LIBDIR	= ../lib
@@ -11,6 +12,7 @@ OBJ	= $(SRC:.C=.o)
 ##LIB	= timer
 ##INC	= -I $(INCDIR)
 EXE	= Arum
+ARCHIVE = libarum.a
 
 RM	= /bin/rm
 MV	= /bin/mv
@@ -20,7 +22,7 @@ SED	= /usr/bin/sed
 
 EXA	= $(EX1) $(EX2) $(EX3) $(EX4) $(EX5) $(EX6)
 
-all: $(EXE)
+all: $(ARCHIVE) $(EXE)
 
 clean:  rmexe rmobj
 
@@ -30,8 +32,14 @@ clean:  rmexe rmobj
 #	$(RM) Interrupts.tab.h
 #	$(RM) Interrupts.tab.C
 
+## POSSIBLE DEBUG FLAGS
+##    -DDEBUG_CPU  - Adds printf to CpuId module
+##    -DDEBUG_COUNT - Adds printf to Counters module
+DEBUG_FLAGS = -DDEBUG_CPU
+
 ##CXXFLAGS=-O3 $(INC)
-CXXFLAGS=-O3
+CXXFLAGS=-O3 $(DEBUG_FLAGS)
+
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $<
 
@@ -50,15 +58,11 @@ CXXFLAGS=-O3
 	$(SED) -e s/yy/$(<:.tab.y=)_/g -e s/y.tab.c/$</g y.tab.h > $(<:.y=).h
 	$(RM)  y.tab.c y.tab.h
 
-##$(EXE):	$(OBJ)
-##	$(CXX) -o $(EXE) $(CXXFLAGS) $(OBJ) -L $(LIBDIR) -l $(LIB)
-##	$(RM) -rf $(EXA)
-##	for i in $(EXA) ; do /bin/ln $(EXE) $$i ; done
+$(EXE):	$(ARCHIVE)
+	$(CXX) -o $(EXE) $(CXXFLAGS) $(ARCHIVE)
 
-$(EXE):	$(OBJ)
-	$(CXX) -o $(EXE) $(CXXFLAGS) $(OBJ)
-	# $(RM) -rf $(EXA)
-	# for i in $(EXA) ; do /bin/ln $(EXE) $$i ; done
+$(ARCHIVE): $(OBJ)
+	ar -ruv $(ARCHIVE) $(OBJ)
 
 $(OBJ):	$(HDR)
 

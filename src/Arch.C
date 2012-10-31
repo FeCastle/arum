@@ -346,9 +346,10 @@ int
 Arch::printIterator() const
 {
    int rv;
+   int lineNumber = 0; // TODO
    if (!this->isEmpty()) {
       if (this->iterator != NULL) {
-         printf("\t%d\t%s\n", this->iterator->line);
+         printf("\t%d\t%s\n", lineNumber, this->iterator->line);
          rv = OK;
       } else {
          printf("current iterator is null - try resetting it\n");
