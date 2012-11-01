@@ -79,8 +79,14 @@ Arch::parseEvent(EventNode * e)
    char cAddr[MAX_ADDR_AS_CHAR_LEN];
    char tempName[MAX_LINE_LEN];   
 
+   // make sure iterator is set
+   if (this->iterator == NULL) {
+	fprintf (stderr, "Warning:  parseEvent()  Iterator not set!\n");
+      	rv = false;  //could not add an event
+   }
+
    //make sure iterator points to top of an event
-   if (this->iterator->line[0] != '!') {
+   else if (this->iterator->line[0] != '!') {
 #ifdef DEBUG_ARCH
       printf ("1. Format of \"%s\" is incorrect in file %s\n", 
          this->iterator->line, this->archStr);
