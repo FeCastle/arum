@@ -116,7 +116,11 @@ main( int argc, char* argv[], char* envp[] )
            }
         }
         
-        execve( argv[argc -1], argv + (argc - 1), envp);
+		// If this returns the program did not succeed
+        execve( argv[programIndex], argv + (programIndex), envp);
+		fprintf (stderr, "Error:  Unable to execute %s\n", argv[programIndex]);
+		fprintf (stderr, "        May need full path?  (/bin/%s)\n", argv[programIndex]);
+		return 128;
     } else {
         // parent process
 	int status = 0;
@@ -177,7 +181,8 @@ Main::parse_args( int argc, char* argv[])
     while (1) {
        int option_index = 0;
 
-       c = getopt_long (argc, argv, "h:mf:", long_options,
+       // Add a '+' in front to quit processing when a NON option argument is present
+       c = getopt_long (argc, argv, "+h:mf:", long_options,
                         &option_index);
        if (c == -1) {
           break;
@@ -321,11 +326,19 @@ Main::parse_args( int argc, char* argv[])
     if (optind < argc) {
        // These are the remaining arguments, should be the executable that
        // Arum will launch
+       programIndex = optind;
+#ifdef DEBUG_M
+       printf ("Program starts at index:  %d", programIndex);
        printf ("non-option ARGV-elements: ");
        while (optind < argc){
-          printf ("%s ", argv[optind++]);
+          printf ("%s - ", argv[optind++]);
        } 
        printf ("\n");
+#endif
+    }
+    else {
+        printf (" - EXEC option required\n");
+        return error;
     }
 
     return 0;
@@ -339,7 +352,20 @@ Main::parse_args( int argc, char* argv[])
 void
 Main::print_args( int argc, char* argv[] )
 {
-    printf("Usage: %s [args...] program [program args]\n", argv[0]);
+	fprintf(stderr, "Usage: %s [arum options] EXEC [EXEC opttions]\n"
+	, argv[0]);
+	fprintf(stderr, "Execute program EXEC [EXEC options] and display resource usage.\n");
+	fprintf(stderr, "\n"); 
+	fprintf(stderr, "Option summary:\n");
+	fprintf(stderr, "  -h | --events list     list of hardware counter events to collect; separate\n");
+	fprintf(stderr, "                         event names by white space.\n");
+	fprintf(stderr, "\n"); 
+	fprintf(stderr, "  -m | --mulitplex       This turns on time multiplexing for hardware counter\n");
+	fprintf(stderr, "                         collection.\n");
+	fprintf(stderr, "\n"); 
+	fprintf(stderr, "  -f | --file filename   Read configuration settings from a file (i.e., the\n");
+	fprintf(stderr, "                         counters to specify, etc.)\n");
+	fprintf(stderr, "\n");
 }
 
 // Main::Main()

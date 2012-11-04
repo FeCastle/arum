@@ -11,6 +11,7 @@
 static int confFileFlag = 0;
 static int mplexFlag = 0;
 static int eventsListFlag = 0;
+static int programIndex = 0;  // Argv index of exec Program
 
 
 class Main {
