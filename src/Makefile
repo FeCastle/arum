@@ -39,9 +39,6 @@ CXXFLAGS=-O3 $(DEBUG_FLAGS)
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $<
 
-$(ARCHIVE): $(OBJ)
-	ar -r $(ARCHIVE) $(OBJ)
-	
 .l.C:
 	$(LEX) $<
 	$(SED) -e s/yy/$(<:.lex.l=)_/g -e s/lex.yy.c/$</g lex.yy.c > $(<:.l=).C
