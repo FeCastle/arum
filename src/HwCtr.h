@@ -78,8 +78,10 @@ static int
 static int
    d_close ( struct inode *inode, struct file *filp);
 
+/*
 static int
    d_ioctl (struct inode *i, struct file *f, unsigned int x, unsigned long y);
+*/
 
 static unsigned long 
    get_cr4( void );

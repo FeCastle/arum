@@ -1,7 +1,13 @@
 # Object files
 *.o
 
+# VIM files
+*.swp
+
+# Interrupts 
+/src/Interrupts/Interrupts.*.C
+/src/Interrupts/Interrupts.*.h
+
 # Build products
-/byHand-parse-test/Arum
-/hwCtr-test/test-module
+/src/Arum
 

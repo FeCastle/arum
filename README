@@ -1,0 +1,14 @@
+To build and test Arum Hardare Counter Module (HwCtr.ko)
+1.  Build the source
+	cd src
+	make module
+
+2.  Load the kernel module and build character device
+	cd ../tools
+	sudo ./load_hwCtr.sh   
+	
+3.  Create and run the HwCtrTest
+	cd ../tests
+	make HwCtrTest
+	sudo ./HwCtrTest
+

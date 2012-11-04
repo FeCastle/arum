@@ -1,9 +1,18 @@
+/***********************************************************************
+ * HwCtr
+ *
+ * This is a linux kernel module used to count hardware interrupts?
+ * See:  load_hwCtr.sh to see how to add this module and 
+ *       create the character dev
+***********************************************************************/
+
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/spinlock.h>
 #include <linux/cdev.h>
+#include <linux/slab.h>
 #include <asm/uaccess.h>
 #include <asm/msr.h>
 
@@ -24,7 +33,8 @@ static struct file_operations fops = {
     .write   =  d_write,
     .open    =  d_open,
     .release =  d_close,
-    .ioctl   =  d_ioctl,
+	// ioctl has been replace by unlocked_ioctl and compat_ioctl
+    // .ioctl   =  d_ioctl,
 };
 
 			    // "major_dev" contains (after init)
@@ -740,12 +750,13 @@ d_close( struct inode *inode, struct file *filp )
     control_reqOps = 0;
     return 0;
 }
-
+/**********************************************************
 static int
 d_ioctl(struct inode *i, struct file *f, unsigned int x, unsigned long y)
 {
     return 0L;
 }
+***********************************************************/
 
 
 /*
