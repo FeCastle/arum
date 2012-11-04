@@ -1,5 +1,9 @@
 # Object files
 *.o
+*.a
+
+# git files
+*.orig
 
 # VIM files
 *.swp
@@ -9,5 +13,8 @@
 /src/Interrupts/Interrupts.*.h
 
 # Build products
-/src/Arum
+src/Arum
+tests/EventTest
+tests/CounterTest
+tests/CpuIdTest
 

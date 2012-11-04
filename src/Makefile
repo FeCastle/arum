@@ -2,11 +2,15 @@ obj-m := HwCtr.o
 KDIR := /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
-SRC	= Arum.C Events.C Arch.C CpuId.C ResourceUsage.C Utilities.C Counters.C $(SRY:.y=.C) $(SRL:.l=.C)
+# SRY	= Interrupts.tab.y
+# SRL	= Interrupts.lex.l
+##SRC	= Main.C CpuId.C ResourceUsage.C Utilities.C $(SRY:.y=.C) $(SRL:.l=.C)
+## Don't build "Main".  The "Main" is in Arum.C 
+SRC	= Arum.C CpuId.C Events.C Arch.C ResourceUsage.C Utilities.C Counters.C $(SRY:.y=.C) $(SRL:.l=.C)
 HDR	= $(SRC:.C=.h) defs.h
 OBJ	= $(SRC:.C=.o)
-ARCHIVE = libarum.a
 EXE	= Arum
+ARCHIVE = libarum.a
 
 RM	= /bin/rm
 MV	= /bin/mv
@@ -24,18 +28,40 @@ module:
 
 clean:  rmexe rmobj rmmod rmint
 
+## POSSIBLE DEBUG FLAGS
+##    -DDEBUG_CPU  - Adds printf to CpuId module
+##    -DDEBUG_COUNT - Adds printf to Counters module
+DEBUG_FLAGS = -DDEBUG_CPU
+
 ##CXXFLAGS=-O3 $(INC)
-CXXFLAGS=-O3
+CXXFLAGS=-O3 $(DEBUG_FLAGS)
+
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $<
 
 $(ARCHIVE): $(OBJ)
 	ar -r $(ARCHIVE) $(OBJ)
 	
-$(EXE):	$(OBJ)
-	$(CXX) -o $(EXE) $(CXXFLAGS) $(OBJ)
-	# $(RM) -rf $(EXA)
-	# for i in $(EXA) ; do /bin/ln $(EXE) $$i ; done
+.l.C:
+	$(LEX) $<
+	$(SED) -e s/yy/$(<:.lex.l=)_/g -e s/lex.yy.c/$</g lex.yy.c > $(<:.l=).C
+	$(RM)  lex.yy.c
+
+.y.C:
+	$(YACC) $<
+	$(SED) -e s/yy/$(<:.tab.y=)_/g -e s/y.tab.c/$</g y.tab.c > $(<:.y=).C
+	$(RM)  y.tab.c
+
+.y.h:
+	$(YACC) -d $<
+	$(SED) -e s/yy/$(<:.tab.y=)_/g -e s/y.tab.c/$</g y.tab.h > $(<:.y=).h
+	$(RM)  y.tab.c y.tab.h
+
+$(EXE):	$(ARCHIVE)
+	$(CXX) -o $(EXE) $(CXXFLAGS) $(ARCHIVE)
+
+$(ARCHIVE): $(OBJ)
+	ar -ruv $(ARCHIVE) $(OBJ)
 
 $(OBJ):	$(HDR)
 

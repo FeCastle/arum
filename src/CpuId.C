@@ -80,6 +80,10 @@ CpuId::isCpuidEnabled()
 
     int before=0, after=0;
 
+#ifdef __i386__
+	// TODO  32 bit 
+    this->cpuid_enabled = false;
+#else
     __asm__ __volatile__(
         "pushf ;"
         "pop %%rax;"
@@ -98,8 +102,10 @@ CpuId::isCpuidEnabled()
     );
 
     this->cpuid_enabled = (before != after);
+#endif
 
     return (this->cpuid_enabled);
+
 }
 
 int
@@ -115,6 +121,8 @@ CpuId::doCpuid0()
      */
     int eax=0, ebx=0, ecx=0, edx=0;
 
+/*  this is a 64 bit version */
+#ifdef __x86_64__
      __asm__ __volatile__(
         "movl $0x0,%%eax;"
         "cpuid ;"
@@ -127,6 +135,20 @@ CpuId::doCpuid0()
     :
     : "%eax", "%ebx", "%ecx", "%edx"
     );
+#endif
+
+/* 32bit PIC: don't clobber ebx */
+#ifdef __i386__
+	__asm volatile
+		("mov %%ebx, %%edi;" 
+		"cpuid;"
+		"mov %%ebx, %%esi;"
+		"mov %%edi, %%ebx;"
+		:"+a" (eax), "=S" (ebx), "=c" (ecx), "=d" (edx)
+		: 
+		:"edi"
+		);
+#endif
 
     this->lsfn = eax;  /*highest value recognized by CPUID for this proc.*/
 
@@ -144,15 +166,36 @@ CpuId::doCpuid0()
     this->vendor[11] = (ecx>>24) & 0xff;
     this->vendor[12] = '\0';
 
+
 #ifdef DEBUG_CPU    
     printf ("CPUID-0:\n");
-    printf ("eax = 0x%8.8lx\n",eax);
+    this->printReg ("eax", eax);
     printf("lsfn   = %d\n", this->lsfn);
     printf("vendor = %s\n", this->vendor);
 #endif
     return this->lsfn;
 }
 
+/*
+ * printReg
+ *    Used to debug register values for 32 or 64 bit 
+*/
+void
+CpuId::printReg(const char *regName, int regVal)
+{
+	printf ("%s = ", regName);
+	// TODO 32 or 64 bit
+	#ifdef __x86_64__
+		printf ("0x%8.8lx\n", regVal);
+	#else
+	  #ifdef __i386__
+		printf ("0x%8.8x\n", regVal);
+	  #else
+		printf ("Unknown Architecture.\n");
+	  #endif
+	#endif
+}
+	
 void
 CpuId::doCpuid1()
 {
@@ -165,6 +208,7 @@ CpuId::doCpuid1()
     */
     int eax=0, ebx=0, ecx=0, edx=0;
 
+#ifdef __x86_64__
     __asm__ __volatile__(
         "movl $0x1,%%eax;"
         "cpuid ;"
@@ -177,6 +221,20 @@ CpuId::doCpuid1()
     :
     : "%eax", "%ebx", "%ecx", "%edx"
     );
+#endif 
+
+/* TODO 32bit PIC: don't clobber ebx */
+#ifdef __i386__
+	__asm volatile
+		("mov %%ebx, %%edi;" 
+		"cpuid;"
+		"mov %%ebx, %%esi;"
+		"mov %%edi, %%ebx;"
+		:"+a" (eax), "=S" (ebx), "=c" (ecx), "=d" (edx)
+		: 
+		:"edi"
+		);
+#endif
 
     union {
        struct {
@@ -204,23 +262,21 @@ CpuId::doCpuid1()
     }
 #ifdef DEBUG_CPU
     printf("CPUID-1:\n");
-    printf("a.fields.stepping        = 0x%lx\n", a.fields.stepping);
-    printf("a.fields.model           = 0x%lx\n", a.fields.model);
-    printf("a.fields.family          = 0x%lx\n", a.fields.family);
-    printf("a.fields.res0            = 0x%lx\n", a.fields.res0);
-    printf("a.fields.extended_model  = 0x%lx\n",
-            a.fields.extended_model);
-    printf("a.fields.extended_family = 0x%lx\n",
-            a.fields.extended_family);
-    printf("a.fields.res1            = 0x%lx\n", a.fields.res1);
+    this->printReg("a.fields.stepping", a.fields.stepping);
+    this->printReg("a.fields.model", a.fields.model);
+    this->printReg("a.fields.family", a.fields.family);
+    this->printReg("a.fields.res0", a.fields.res0);
+    this->printReg("a.fields.extended_model", a.fields.extended_model);
+    this->printReg("a.fields.extended_family", a.fields.extended_family);
+    this->printReg("a.fields.res1", a.fields.res1);
     printf("\n");
 
-    printf("this->stepping           = 0x%lx\n", this->stepping);
-    printf("this->model              = 0x%lx\n", this->model);
-    printf("this->family             = 0x%lx\n", this->family);
+    this->printReg("this->stepping", this->stepping);
+    this->printReg("this->model", this->model);
+    this->printReg("this->family", this->family);
     printf("\n");
 
-    printf("eax = 0x%8.8lx\n", eax);
+    this->printReg("eax", eax);
 #endif
     union {
         struct {
@@ -240,8 +296,8 @@ CpuId::doCpuid1()
     this->cpu_number   = b.fields.cpu_number;
 
 #ifdef DEBUG_CPU
-    printf("ebx = 0x%8.8lx\n", ebx);
-    printf("ecx = 0x%8.8lx\n", ecx);
+    this->printReg("ebx", ebx);
+    this->printReg("ecx", ecx);
 #endif
 
     union {
@@ -318,7 +374,7 @@ CpuId::doCpuid1()
      *
      */
 #ifdef DEBUG_CPU
-    printf("edx = 0x%8.8lx\n", edx);
+    this->printReg("edx", edx);
 #endif
 }
 
@@ -336,6 +392,9 @@ CpuId::doBrandString()
      */
     int eax=0, ebx=0, ecx=0, edx=0;
 
+#ifdef __i386__
+    strncpy (this->brand_string, "TODO - 32bit", 48);
+#else
      __asm__ __volatile__(
         "movl $0x80000002,%%eax;"
         "cpuid ;"
@@ -435,6 +494,7 @@ CpuId::doBrandString()
     this->brand_string[45] = (edx>> 8) & 0xff;
     this->brand_string[46] = (edx>>16) & 0xff;
     this->brand_string[47] = (edx>>24) & 0xff;
+#endif // 64 bit
 
 #ifdef DEBUG_CPU
     printf ("CPUID-BRAND_STRING:%s\n", this->brand_string);
@@ -456,6 +516,9 @@ CpuId::doCpuidIntelArch()
      */
 
      int eax=0, ebx=0, ecx=0, edx=0;
+#ifdef __i386__
+    fprintf (stderr, "Warning:  doCpuIntelArch - IA32 not complete\n");
+#else
      printf ("Intel processor supports Architectural counters\n");
 
      __asm__ __volatile__(
@@ -470,11 +533,13 @@ CpuId::doCpuidIntelArch()
      :
      : "%eax", "%ebx", "%ecx", "%edx"
      );
+#endif
+
 #ifdef DEBUG_CPU
-     printf ("EAX = 0x%8.8lx\n", eax);
-     printf ("EBX = 0x%8.8lx\n", eax);
-     printf ("ECX = 0x%8.8lx\n", eax);
-     printf ("EDX = 0x%8.8lx\n", eax);
+     this->printReg ("EAX", eax);
+     this->printReg ("EBX", ebx);
+     this->printReg ("ECX", ecx);
+     this->printReg ("EDX", edx);
 #endif
 }
 
