@@ -1,4 +1,4 @@
-SRC	= EventTest.C CounterTest.C HwCtrTest.C
+SRC	= EventTest.C CounterTest.C HwCtrTest.C Loop.C
 HDR	= $(SRC:.C=.h) defs.h
 OBJ	= $(SRC:.C=.o)
 
@@ -7,7 +7,7 @@ ARCHIVE	= ../src/libarum.a
 
 ##LIB	= timer
 INC	= -I $(INCDIR)
-EXE	= EventTest CounterTest HwCtrTest
+EXE	= EventTest CounterTest HwCtrTest Loop
 
 RM	= /bin/rm
 MV	= /bin/mv
