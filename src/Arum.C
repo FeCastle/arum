@@ -128,7 +128,7 @@ main( int argc, char* argv[], char* envp[] )
     }
     //Stop Timers
     //double e = timer->seconds();
-    ResourceUsage ru( ResourceUsage::CHILDREN );
+    ResourceUsage childUsage( ResourceUsage::CHILDREN );
 
     if (arum.perfCounters){    
        //Read Counters -- should do in a loop (until no more to read or error)
@@ -144,9 +144,19 @@ main( int argc, char* argv[], char* envp[] )
        rv = cntrs.closeDevice();
     }
 
-    printf("User time is %.1lf seconds\n", ru.user_time());
-    printf("System time is %.1lf seconds\n", ru.sys_time());
+    printf("User time    %.4lfs\n", childUsage.user_time());
+    printf("System time  %.4lfs\n", childUsage.sys_time());
     //printf("Elapsed time is %.1lf seconds\n", e-s);
+
+    if (arum.resourceCounters) {
+        printf("maxrss  - Max resident set size      %ld Kb\n",       childUsage.maxrss());
+        printf("minflt  - Page faults without I/O    %ld\n",          childUsage.minor_fault());
+        printf("majflt  - Page faults with I/O       %ld\n",          childUsage.major_fault());
+        printf("inblock - File system input          %ld blocks\n",   childUsage.in_block());
+        printf("oublock - File system output         %ld blocks\n",   childUsage.out_block());
+        printf("nvcsw   - Voluntary context switch   %ld \n",         childUsage.vol_ctx_sw());
+        printf("nivcsw  - Involuntary context switch %ld \n",         childUsage.invol_ctx_sw());
+    }
 
     if (arum.perfCounters) {
        cntrs.printReport();
@@ -182,7 +192,7 @@ Main::parse_args( int argc, char* argv[])
        int option_index = 0;
 
        // Add a '+' in front to quit processing when a NON option argument is present
-       c = getopt_long (argc, argv, "+h:mf:", long_options,
+       c = getopt_long (argc, argv, "+rh:mf:", long_options,
                         &option_index);
        if (c == -1) {
           break;
@@ -220,7 +230,8 @@ Main::parse_args( int argc, char* argv[])
                             MAX_EVENTS_LEN);
                         return error;  
                      }
-                  } else {
+                  }
+                  else {
                   }
                 } 
 #ifdef DEBUG_M
@@ -284,6 +295,10 @@ Main::parse_args( int argc, char* argv[])
 #endif
              break;
 
+          case 'r':
+              resourceCounters = 1;
+              break;
+
           case 'f':
              //short option for config file
              if (optarg) {
@@ -322,6 +337,11 @@ Main::parse_args( int argc, char* argv[])
       }
 
     } //END_WHILE
+
+	if (resourceFlag) {
+		// printf ("Long option --resources is set.\n");
+    	resourceCounters = 1;
+	}
 
     if (optind < argc) {
        // These are the remaining arguments, should be the executable that
@@ -376,6 +396,7 @@ Main::Main(){
    configFile = new char[MAX_FILENAME_LEN + 1];
    eventsListStr = new char [MAX_EVENTS_LEN + 1];
    perfCounters = false;
+   resourceCounters = false;
 
    long_options[0].name = "events";
    long_options[0].has_arg = 1;
@@ -396,6 +417,11 @@ Main::Main(){
    long_options[3].has_arg = 0;
    long_options[3].flag = 0;
    long_options[3].val = 0;
+
+   long_options[3].name = "resources";
+   long_options[3].has_arg = 0;
+   long_options[3].flag = &resourceFlag;
+   long_options[3].val = 1;
 }
 
 // Main::~Main()
