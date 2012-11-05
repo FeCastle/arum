@@ -33,7 +33,7 @@ static struct file_operations fops = {
     .write   =  d_write,
     .open    =  d_open,
     .release =  d_close,
-	// ioctl has been replace by unlocked_ioctl and compat_ioctl
+    // ioctl has been replace by unlocked_ioctl and compat_ioctl
     // .ioctl   =  d_ioctl,
 };
 
@@ -308,7 +308,9 @@ d_write( struct file *filp, const char *buf, size_t count, loff_t *whence )
     __u32 cccr_forceOvfFlag, cccr_OvfPmiFlag, cccr_cascadeFlag;
     __u32 cccr_ovfFlag;
 
+    /* TODO - unused variable 'dev'
     struct hwctr_dev * dev = filp->private_data;
+    */
 
     printk (KERN_NOTICE DEVNAME ": d_write: entry - curr state is %d\n", control_state);
 
@@ -892,7 +894,8 @@ reset_escr (unsigned msrAddr)
 {
    //bits 0,1,31-63 are reserved for Intel ESCRs for NetBurst Microarch.
    //mask for the low 32 bits is 80000003h.
-   unsigned long data = 0x0, sanityCheck = 0x0;
+   unsigned long data = 0x0;
+/* TODO unsigned long sanityCheck = 0x0; */
    __u32 currLow32Escr = 0x0;
    __u32 escrMask = 0x80000003;
    __u32 newEscrVal = 0x0;
@@ -921,7 +924,9 @@ reset_cccr (unsigned msrAddr)
 // Reserved bits for Intel NetBurst Microarch: 0-11,16,17,27-29,32-63
 // mask for the low 32 bits is 38030FFFh.
 
-   unsigned long data = 0x0, sanityCheck = 0x0;
+   unsigned long data = 0x0;
+   unsigned long sanityCheck = 0x0;
+
    __u32 currLow32Cccr = 0x0;
    __u32 cccrMask = 0x38030fff;
    __u32 newCccrVal = 0x0;
