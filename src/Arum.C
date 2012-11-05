@@ -20,6 +20,10 @@
 * 
 *  -f | --file filename   Read configuration settings from a file (i.e., the 
 *                         counters to specify, etc.)
+*
+*  -r | --resources       Display application resources used from getrusage
+*                         such as page faults, block I/O, page faults, and 
+*                         context switches.
 */
 
 #include <time.h>
@@ -377,14 +381,18 @@ Main::print_args( int argc, char* argv[] )
 	fprintf(stderr, "Execute program EXEC [EXEC options] and display resource usage.\n");
 	fprintf(stderr, "\n"); 
 	fprintf(stderr, "Option summary:\n");
-	fprintf(stderr, "  -h | --events list     list of hardware counter events to collect; separate\n");
+	fprintf(stderr, "  -h | --events <LIST>   LIST of hardware counter events to collect; separate\n");
 	fprintf(stderr, "                         event names by white space.\n");
 	fprintf(stderr, "\n"); 
 	fprintf(stderr, "  -m | --mulitplex       This turns on time multiplexing for hardware counter\n");
 	fprintf(stderr, "                         collection.\n");
 	fprintf(stderr, "\n"); 
-	fprintf(stderr, "  -f | --file filename   Read configuration settings from a file (i.e., the\n");
+	fprintf(stderr, "  -f | --file <FILE>     Read configuration settings from <FILE> (i.e., the\n");
 	fprintf(stderr, "                         counters to specify, etc.)\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "  -r | --resources       Display application resources used from getrusage\n");
+	fprintf(stderr, "                         such as page faults, block I/O, page faults, and\n");
+	fprintf(stderr, "                         context switches.\n");
 	fprintf(stderr, "\n");
 }
 

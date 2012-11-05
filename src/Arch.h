@@ -10,7 +10,7 @@
 #define INTEL_VENDOR_STR	"GenuineIntel"
 #define AMD_VENDOR_STR		"AuthenticAMD"
 
-#define MAX_ARCH_FILE_LEN	16
+#define MAX_ARCH_FILE_LEN	256
 #define MAX_EVT_NAME_LEN	30
 #define MAX_REG_NAME_LEN    	20
 #define MAX_ADDR_AS_CHAR_LEN	9
@@ -25,6 +25,9 @@
 
 #define AMD_15_65_STR		"AMD-15-65"
 #define AMD_15_65_ID		2
+
+#define INTEL_6_7_STR		"Intel-6-7"
+#define INTEL_6_7_ID		3
 
 #define OK			1
 #define E_END_OF_LIST		-1

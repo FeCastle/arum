@@ -15,3 +15,9 @@ To build and test Arum Hardare Counter Module (HwCtr.ko)
 	make HwCtrTest
 	sudo ./HwCtrTest
 
+TODO - You need to add Architecture specific configuration files to /etc/arum
+       this needs to be added to the Makefile(s).  (make install ?)
+	$ sudo mkdir /etc/arum
+	$ sudo cp tests/Intel-15-6 /etc/arum
+	$ sudo chmod 644 /etc/arum/Intel-15-6
+

@@ -29,9 +29,10 @@ module:
 clean:  rmexe rmobj rmmod rmint
 
 ## POSSIBLE DEBUG FLAGS
-##    -DDEBUG_CPU  - Adds printf to CpuId module
+##    -DDEBUG_ARCH  - Adds printf to Arch module
+##    -DDEBUG_CPU   - Adds printf to CpuId module
 ##    -DDEBUG_COUNT - Adds printf to Counters module
-DEBUG_FLAGS = -DDEBUG_CPU
+DEBUG_FLAGS = -g 
 
 ##CXXFLAGS=-O3 $(INC)
 CXXFLAGS=-O3 $(DEBUG_FLAGS)
