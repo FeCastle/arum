@@ -1,4 +1,7 @@
 To build and test Arum Hardare Counter Module (HwCtr.ko)
+-- Before you can build the module you may need to install the kernel headers.
+-- Example:  sudo apt-get install kernel-headers-$(uname -r)
+
 1.  Build the source
 	cd src
 	make module
