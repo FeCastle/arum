@@ -7,7 +7,9 @@ ARCHIVE	= ../src/libarum.a
 
 ##LIB	= timer
 INC	= -I $(INCDIR)
+### These need the archive library (libarum.a) ###
 ARUMEXE	= EventTest CounterTest HwCtrTest 
+### These do not need to be linked with archive ###
 TESTEXE = Loop Permutation Binary FunctionCall
 
 RM	= /bin/rm
@@ -17,7 +19,7 @@ LEX	= /usr/bin/lex
 SED	= /usr/bin/sed
 ECHO    = echo
 
-all:  $(EXE)
+all:  $(ARUMEXE) $(TESTEXE)
 
 clean:  rmexe rmobj
 
@@ -36,7 +38,7 @@ $(TESTEXE): $(OBJ)
 $(OBJ):	$(SRC)
 
 rmexe:
-	$(RM) -rf $(EXE)
+	$(RM) -rf $(ARUMEXE) $(TESTEXE)
 
 rmobj:
 	$(RM) -rf $(OBJ) 
