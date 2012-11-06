@@ -90,6 +90,7 @@ main( int argc, char* argv[], char* envp[] )
             arum.perfCounters = true;
          }
       } else {
+	fprintf (stderr, "Warning:  inCompatible events for device\n");
          arum.perfCounters = false;
       }
    } 

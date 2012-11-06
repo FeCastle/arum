@@ -21,3 +21,8 @@ TODO - You need to add Architecture specific configuration files to /etc/arum
 	$ sudo cp tests/Intel-15-6 /etc/arum
 	$ sudo chmod 644 /etc/arum/Intel-15-6
 
+NOTE:  If your architecture config files are in a different location (like /foo/bar)
+        $ ARUMDIR="/foo/bar"
+	$ export ARUMDIR
+
+
