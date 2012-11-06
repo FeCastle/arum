@@ -7,7 +7,8 @@ ARCHIVE	= ../src/libarum.a
 
 ##LIB	= timer
 INC	= -I $(INCDIR)
-EXE	= EventTest CounterTest HwCtrTest Loop Permutation Binary FunctionCall
+ARUMEXE	= EventTest CounterTest HwCtrTest 
+TESTEXE = Loop Permutation Binary FunctionCall
 
 RM	= /bin/rm
 MV	= /bin/mv
@@ -26,8 +27,11 @@ CXXFLAGS=-O3 $(INC)
 .C.o:
 	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) -c $<
 
-$(EXE):	$(OBJ)
+$(ARUMEXE): $(OBJ)
 	$(CXX) -o $@ $(CXXFLAGS) $(DEBUGFLAGS) $@.o $(ARCHIVE)
+
+$(TESTEXE): $(OBJ)
+	$(CXX) -o $@ $(CXXFLAGS) $(DEBUGFLAGS) $@.o 
 
 $(OBJ):	$(SRC)
 
