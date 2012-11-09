@@ -84,7 +84,7 @@ void initSensor(BPatch_addressSpace *handle, BPatch_image * appImage) {
   assignDiffTime = new BPatch_arithExpr(BPatch_assign, *diffTime, BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
 
   char funcName[64];
-  BPatch_snippet *result = new BPatch_constExpr("[%p] %u\n");
+  BPatch_snippet *result = new BPatch_constExpr("\n<ARUM> [%p] %u\n");
   printfArgs.push_back(result);
   //printfArgs.push_back(new BPatch_constExpr(function->getName(funcName, 64))); // %s
   printfArgs.push_back(new BPatch_originalAddressExpr()); // %p
@@ -104,11 +104,11 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_function * function) {
   handle->insertSnippet(*assignEndTime,*exit_point);
 }
 
-int main(int argc, char* argv[], char* envp[]) {
-  char* name = argv[argc-1];
+void instrumentProg(int argc, char* argv[], char* envp[]) {
+  char* name = argv[0];
 
   printf("program name: %s\n", name);
-	
+
   //create a new temporary file name for the given application binary after inserting the codes
   char new_name[256];
   strcpy(new_name,name);
@@ -186,7 +186,7 @@ int main(int argc, char* argv[], char* envp[]) {
     close(fd);
 
     // we execute the new application binary (that is the binary after insertion)
-    execve(new_name, argv+(argc-1), envp);
+    execve(new_name, argv, envp);
   } else {
     // parent process
     int status = 0;
@@ -201,5 +201,10 @@ int main(int argc, char* argv[], char* envp[]) {
 #endif
     }	
   }
+}
+
+int main(int argc, char* argv[], char* envp[]) {
+  instrumentProg(argc-1, argv+1, envp);	
+  return 0;
 }
 
