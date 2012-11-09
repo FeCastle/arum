@@ -63,56 +63,38 @@ vector< const char * > * getFuncNames ( vector <BPatch_function*> *funcs ) {
   return allFuncNames;
 }
 
-void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, std::vector<BPatch_function *> functions) {
-  BPatch_Vector<const char*> funcNames;
-  functions[0]->getNames(funcNames);
-  printf("Start instrumenting function %s\n", funcNames[0]);
-  std::vector<BPatch_point *> *entry_point = functions[0]->findPoint(BPatch_entry);
-  std::vector<BPatch_point *> *exit_point = functions[0]->findPoint(BPatch_exit);
+void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPatch_function * function) {
+  vector<BPatch_point *> *entry_point = function->findPoint(BPatch_entry);
+  vector<BPatch_point *> *exit_point = function->findPoint(BPatch_exit);
 
-  // Create a snippet that calls printf with each effective address
-  std::vector<BPatch_snippet *> printfArgs,timeArgs;
-			
-  //bpatch constant express for printing the performance measurement result
-  BPatch_snippet *result = new BPatch_constExpr("\nTotal execution time for the given function is %u seconds\n\n\n");
-  printfArgs.push_back(result);
-
-  //look for the printf and time functions in the application image
-  std::vector<BPatch_function *> printfFuncs;
-  std::vector<BPatch_function *> getTime;
+  vector<BPatch_snippet *> printfArgs, timeArgs;
+  vector<BPatch_function *> printfFuncs, timeFuncs;
   appImage->findFunction("printf", printfFuncs);
-  appImage->findFunction("time",getTime);
+  appImage->findFunction("time", timeFuncs);
 
-  //declare bpatch variables for begin time, end time and their difference as long
+  BPatch_snippet *time_zero = new BPatch_constExpr(0);
+  timeArgs.push_back(time_zero);
+  BPatch_funcCallExpr timeCall(*(timeFuncs[0]),timeArgs);
+
   BPatch_variableExpr *beginTime = handle->malloc(*(appImage->findType("long")));
   BPatch_variableExpr *endTime = handle->malloc(*(appImage->findType("long")));
   BPatch_variableExpr *diffTime = handle->malloc(*(appImage->findType("long")));
 
-  //declare a constant express of zero, this value will be passed to the time function
-  BPatch_snippet *time_zero = new BPatch_constExpr(0);
-  timeArgs.push_back(time_zero);
-  //create function expression for time function with argument 0
-  BPatch_funcCallExpr getTimeCall(*(getTime[0]),timeArgs);
+  BPatch_arithExpr assignBeginTime(BPatch_assign, *beginTime, timeCall);
+  BPatch_arithExpr assignEndTime(BPatch_assign, *endTime, timeCall);
+  BPatch_arithExpr assignDiffTime(BPatch_assign, *diffTime, BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
 
-  //declare arithmetic expressions for assigning the begin and end time
-  BPatch_arithExpr assignTime(BPatch_assign, *beginTime,getTimeCall);
-  BPatch_arithExpr assignEndTime(BPatch_assign, *endTime,getTimeCall);
-  //compute the difference of begin and end time
-  BPatch_arithExpr assignDiffTime(BPatch_assign, *diffTime,BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
-  //push the begin, end time and their difference to the print argument
-  //printfArgs.push_back(beginTime); 
-  //printfArgs.push_back(endTime); 
+  char funcName[64];
+  BPatch_snippet *result = new BPatch_constExpr("[%s] %u\n");
+  printfArgs.push_back(result);
+  printfArgs.push_back(new BPatch_constExpr(function->getName(funcName, 64)));
+  //printfArgs.push_back(new BPatch_originalAddressExpr()); // %p
   printfArgs.push_back(diffTime);
-
-  //delcare the print function expression
   BPatch_funcCallExpr printfCall(*(printfFuncs[0]), printfArgs);
 
-
-  //insert the code of assigning the begin time at the entry point of the specified function
-  handle->insertSnippet(assignTime,*entry_point);
-  //insert the codes of assigning the end time, and compute the difference between begin time and end time to the exit point of the specified function
-  //and then print the result
-  //note that the order of inserting the codes matters, the first insertion codes will be executed last (like a stack) 
+  //insert the code at the entry point
+  handle->insertSnippet(assignBeginTime,*entry_point);
+  //at the end. note that the order of inserting the codes matters, the first insertion codes will be executed last (like a stack) 
   handle->insertSnippet(printfCall, *exit_point);
   handle->insertSnippet(assignDiffTime, *exit_point);
   handle->insertSnippet(assignEndTime,*exit_point);
@@ -164,7 +146,7 @@ int main(int argc, char* argv[], char* envp[]) {
 	std::vector<BPatch_function *> functions;
 	bool funcfound = appImage->findFunction(funcName, functions);
 	if(funcfound) {
-	  registerFunction(handle, appImage, functions);
+	  registerFunction(handle, appImage, functions[0]);
 
 	  //BPatch_process *appProc = dynamic_cast<BPatch_process *>(handle);
 	  //declare a bpatch_binaryEdit for the modified binary
