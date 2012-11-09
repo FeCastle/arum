@@ -40,8 +40,7 @@ vector< BPatch_function* >* getExecutableFuncs ( BPatch_image *image ) {
   return aOut->getProcedures();
 }
 
-vector< const char * > * getFuncNames ( vector <BPatch_function*> *funcs ) {
-  vector< const char* > * allFuncNames = new vector< const char* >();
+void printFuncNames ( vector <BPatch_function*> *funcs ) {
   BPatch_Vector<const char*> funcNames;
 
 #ifdef VERBOSE
@@ -57,16 +56,16 @@ vector< const char * > * getFuncNames ( vector <BPatch_function*> *funcs ) {
 	     (long)curfunc->getBaseAddr(),
 	     (long)curfunc->getBaseAddr() + curfunc->getSize());
 #endif
-    allFuncNames->push_back(funcNames[0]);
     funcNames.clear();
   }
-  return allFuncNames;
+  return;
 }
 
-void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPatch_function * function) {
-  vector<BPatch_point *> *entry_point = function->findPoint(BPatch_entry);
-  vector<BPatch_point *> *exit_point = function->findPoint(BPatch_exit);
-
+BPatch_arithExpr* assignBeginTime;
+BPatch_arithExpr* assignEndTime;
+BPatch_arithExpr* assignDiffTime;
+BPatch_funcCallExpr* printfCall;
+void initSensor(BPatch_addressSpace *handle, BPatch_image * appImage) {
   vector<BPatch_snippet *> printfArgs, timeArgs;
   vector<BPatch_function *> printfFuncs, timeFuncs;
   appImage->findFunction("printf", printfFuncs);
@@ -80,24 +79,29 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
   BPatch_variableExpr *endTime = handle->malloc(*(appImage->findType("long")));
   BPatch_variableExpr *diffTime = handle->malloc(*(appImage->findType("long")));
 
-  BPatch_arithExpr assignBeginTime(BPatch_assign, *beginTime, timeCall);
-  BPatch_arithExpr assignEndTime(BPatch_assign, *endTime, timeCall);
-  BPatch_arithExpr assignDiffTime(BPatch_assign, *diffTime, BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
+  assignBeginTime = new BPatch_arithExpr(BPatch_assign, *beginTime, timeCall);
+  assignEndTime = new BPatch_arithExpr(BPatch_assign, *endTime, timeCall);
+  assignDiffTime = new BPatch_arithExpr(BPatch_assign, *diffTime, BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
 
   char funcName[64];
-  BPatch_snippet *result = new BPatch_constExpr("[%s] %u\n");
+  BPatch_snippet *result = new BPatch_constExpr("[%p] %u\n");
   printfArgs.push_back(result);
-  printfArgs.push_back(new BPatch_constExpr(function->getName(funcName, 64)));
-  //printfArgs.push_back(new BPatch_originalAddressExpr()); // %p
+  //printfArgs.push_back(new BPatch_constExpr(function->getName(funcName, 64))); // %s
+  printfArgs.push_back(new BPatch_originalAddressExpr()); // %p
   printfArgs.push_back(diffTime);
-  BPatch_funcCallExpr printfCall(*(printfFuncs[0]), printfArgs);
+  printfCall = new BPatch_funcCallExpr(*(printfFuncs[0]), printfArgs);
+}
+
+void registerFunction(BPatch_addressSpace *handle, BPatch_function * function) {
+  vector<BPatch_point *> *entry_point = function->findPoint(BPatch_entry);
+  vector<BPatch_point *> *exit_point = function->findPoint(BPatch_exit);
 
   //insert the code at the entry point
-  handle->insertSnippet(assignBeginTime,*entry_point);
+  handle->insertSnippet(*assignBeginTime,*entry_point);
   //at the end. note that the order of inserting the codes matters, the first insertion codes will be executed last (like a stack) 
-  handle->insertSnippet(printfCall, *exit_point);
-  handle->insertSnippet(assignDiffTime, *exit_point);
-  handle->insertSnippet(assignEndTime,*exit_point);
+  handle->insertSnippet(*printfCall, *exit_point);
+  handle->insertSnippet(*assignDiffTime, *exit_point);
+  handle->insertSnippet(*assignEndTime,*exit_point);
 }
 
 int main(int argc, char* argv[], char* envp[]) {
@@ -113,8 +117,7 @@ int main(int argc, char* argv[], char* envp[]) {
   dyninstLibcEnv = getenv("DYNINST_LIBC");
   if(NULL!=dyninstLibcEnv && 0!=strcmp(dyninstLibcEnv,"")) {
     BPatch bpatch;
-    std::vector< const char* > *allFuncNames = NULL; // initialized in main
-    std::vector< BPatch_function* > *allFuncs = NULL;// initialized in main
+    vector< BPatch_function* > *allFuncs = NULL;// initialized in main
 
     // register printFuncCounts as an exit callback function
     bpatch.registerExitCallback( printFuncCounts );
@@ -128,12 +131,13 @@ int main(int argc, char* argv[], char* envp[]) {
 
       // get BPatch_image object
       BPatch_image * appImage = handle->getImage();
+      initSensor(handle, appImage);
 
       // gather all functions in the executable, and their names
       allFuncs = getExecutableFuncs(appImage);
-      allFuncNames = getFuncNames(allFuncs);
-      //for (unsigned fIdx=0; fIdx < (*allFuncs).size(); fIdx++) {
-      for (unsigned fIdx=0; fIdx < 1; fIdx++) {
+      printFuncNames(allFuncs);
+      for (unsigned fIdx=0; fIdx < (*allFuncs).size(); fIdx++) {
+      //for (unsigned fIdx=0; fIdx < 1; fIdx++) {
 	BPatch_function *curfunc = (*allFuncs)[fIdx];
 	BPatch_Vector<const char*> funcNames;
 	curfunc->getNames(funcNames);
@@ -142,33 +146,26 @@ int main(int argc, char* argv[], char* envp[]) {
 	printf("Register function: %20s\n",funcNames[0]);
 #endif
 
-	const char* funcName = funcNames[0];
-	std::vector<BPatch_function *> functions;
-	bool funcfound = appImage->findFunction(funcName, functions);
-	if(funcfound) {
-	  registerFunction(handle, appImage, functions[0]);
-
-	  //BPatch_process *appProc = dynamic_cast<BPatch_process *>(handle);
-	  //declare a bpatch_binaryEdit for the modified binary
-	  BPatch_binaryEdit *appBin = dynamic_cast<BPatch_binaryEdit *>(handle);
-
-	  //write back to the disk with the temporary name
-	  if(appBin) {
-	    strcpy(new_name,"arum_");
-	    strcat(new_name,name);
-
-	    appBin->writeFile(new_name);
-	  }
-
-#ifdef DEBUG_M
-	  printf("We are at the end.\n");
-#endif
-	} else {	
-	  printf("Warning : Unable to find function %s.Application performance monitoring will be disabled..\n",argv[argc-2]);
-	}
+	registerFunction(handle, curfunc);
 
 	funcNames.clear();
       }
+
+      //BPatch_process *appProc = dynamic_cast<BPatch_process *>(handle);
+      //declare a bpatch_binaryEdit for the modified binary
+      BPatch_binaryEdit *appBin = dynamic_cast<BPatch_binaryEdit *>(handle);
+
+      //write back to the disk with the temporary name
+      if(appBin) {
+	strcpy(new_name,"arum_");
+	strcat(new_name,name);
+
+	appBin->writeFile(new_name);
+      }
+
+#ifdef DEBUG_M
+      printf("We are at the end.\n");
+#endif
 
     } else {
 	printf ("Warning: Please set DYNINST_LIBC enviroment variable to the Dyninst Libc library to measure the performance of executable. Application performance monitoring will be disabled.\n");
