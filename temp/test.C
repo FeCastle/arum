@@ -114,7 +114,7 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
   assert(0 == strcmp((*fields_end)[1]->getName(), "tms_stime"));
 
   //char funcName[64];
-  BPatch_snippet *result = new BPatch_constExpr("\n<ARUM> [%p] %jd %jd %jd %jd %jd %jd\n");
+  BPatch_snippet *result = new BPatch_constExpr("<ARUM_TIMES> [%p] %jd %jd %jd %jd %jd %jd\n");
   printfArgs.push_back(result);
   //printfArgs.push_back(new BPatch_constExpr(function->getName(funcName, 64))); // %s
   printfArgs.push_back(new BPatch_originalAddressExpr()); // %p
@@ -147,6 +147,8 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
   char new_name[256];
   strcpy(new_name,name);
 
+  int fd = open("arum_temp.txt", O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
+
   char* dyninstLibcEnv = NULL;
   dyninstLibcEnv = getenv("DYNINST_LIBC");
   if(NULL!=dyninstLibcEnv && 0!=strcmp(dyninstLibcEnv,"")) {
@@ -177,6 +179,11 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
 #ifdef VERBOSE
 	printf("Register function: %20s\n",funcNames[0]);
 #endif
+	char tempstr[1024];
+	sprintf(tempstr, "<ARUM_FUNCS> [%s] [0x%lx 0x%lx]\n",funcNames[0],
+	     (long)curfunc->getBaseAddr(),
+	     (long)curfunc->getBaseAddr() + curfunc->getSize());
+	write(fd, tempstr, strlen(tempstr));
 
 	registerFunction(handle, appImage, curfunc);
 
@@ -213,7 +220,6 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
     printf("Executing: %s \n", name);
 #endif
 
-    int fd = open("out.txt", O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
     dup2(fd, 1); // redirect output to the file
     close(fd);
 
@@ -221,6 +227,7 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
     execve(new_name, argv, envp);
   } else {
     // parent process
+    close(fd);
     int status = 0;
     wait(&status);
   } 
@@ -233,6 +240,8 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
 #endif
     }	
   }
+
+  //remove("arum_temp.txt");
 }
 
 int main(int argc, char* argv[], char* envp[]) {
