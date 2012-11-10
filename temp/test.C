@@ -63,32 +63,72 @@ void printFuncNames ( vector <BPatch_function*> *funcs ) {
 
 BPatch_arithExpr* assignBeginTime;
 BPatch_arithExpr* assignEndTime;
-BPatch_arithExpr* assignDiffTime;
+BPatch_arithExpr* assignBeginTMSAdd;
+BPatch_arithExpr* assignEndTMSAdd;
 BPatch_funcCallExpr* printfCall;
 void initSensor(BPatch_addressSpace *handle, BPatch_image * appImage) {
-  vector<BPatch_snippet *> printfArgs, timeArgs;
-  vector<BPatch_function *> printfFuncs, timeFuncs;
+  vector<BPatch_snippet *> printfArgs, timeArgs_begin, timeArgs_end;
+  vector<BPatch_function *> printfFuncs, timesFuncs;
   appImage->findFunction("printf", printfFuncs);
-  appImage->findFunction("time", timeFuncs);
+  appImage->findFunction("fake", timesFuncs);
 
-  BPatch_snippet *time_zero = new BPatch_constExpr(0);
-  timeArgs.push_back(time_zero);
-  BPatch_funcCallExpr timeCall(*(timeFuncs[0]),timeArgs);
+  BPatch_type* longType = appImage->findType("long");
+  assert(longType);
+  // Create tms type
+  BPatch_Vector<char*> names;
+  BPatch_Vector<BPatch_type*> types;
+  names.push_back(const_cast<char*>("tms_utime"));
+  names.push_back(const_cast<char*>("tms_stime"));
+  names.push_back(const_cast<char*>("tms_cutime"));
+  names.push_back(const_cast<char*>("tms_cstime"));
+  types.push_back(longType);
+  types.push_back(longType);
+  types.push_back(longType);
+  types.push_back(longType);
+  BPatch_type* struct_tms = BPatch::bpatch->createStruct("tms", names, types);
+  BPatch_type* lp_struct_tms = BPatch::bpatch->createPointer("lptms", struct_tms);
 
-  BPatch_variableExpr *beginTime = handle->malloc(*(appImage->findType("long")));
-  BPatch_variableExpr *endTime = handle->malloc(*(appImage->findType("long")));
-  BPatch_variableExpr *diffTime = handle->malloc(*(appImage->findType("long")));
+  BPatch_variableExpr* tms_buf_begin = handle->malloc(*struct_tms);
+  BPatch_variableExpr* lp_tms_buf_begin = handle->malloc(*lp_struct_tms);
+  assignBeginTMSAdd = new BPatch_arithExpr(BPatch_assign, *lp_tms_buf_begin, BPatch_arithExpr(BPatch_addr, *tms_buf_begin));
+  BPatch_variableExpr* tms_buf_end = handle->malloc(*struct_tms);
+  BPatch_variableExpr* lp_tms_buf_end = handle->malloc(*lp_struct_tms);
+  assignEndTMSAdd = new BPatch_arithExpr(BPatch_assign, *lp_tms_buf_end, BPatch_arithExpr(BPatch_addr, *tms_buf_end));
 
-  assignBeginTime = new BPatch_arithExpr(BPatch_assign, *beginTime, timeCall);
-  assignEndTime = new BPatch_arithExpr(BPatch_assign, *endTime, timeCall);
-  assignDiffTime = new BPatch_arithExpr(BPatch_assign, *diffTime, BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
+  timeArgs_begin.push_back(lp_tms_buf_begin);
+  //BPatch_snippet* time_zero = new BPatch_constExpr(0);
+  //timeArgs.push_back(time_zero);
+  BPatch_funcCallExpr timeCall_begin(*(timesFuncs[0]),timeArgs_begin);
+  timeArgs_end.push_back(lp_tms_buf_end);
+  BPatch_funcCallExpr timeCall_end(*(timesFuncs[0]),timeArgs_end);
 
-  char funcName[64];
-  BPatch_snippet *result = new BPatch_constExpr("\n<ARUM> [%p] %u\n");
+  BPatch_variableExpr *beginTime = handle->malloc(*longType);
+  BPatch_variableExpr *endTime = handle->malloc(*longType);
+
+  assignBeginTime = new BPatch_arithExpr(BPatch_assign, *beginTime, timeCall_begin);
+  assignEndTime = new BPatch_arithExpr(BPatch_assign, *endTime, timeCall_end);
+  //assignDiffTime = new BPatch_arithExpr(BPatch_assign, *diffTime, BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
+
+  BPatch_Vector<BPatch_variableExpr*>* fields_begin = tms_buf_begin->getComponents();
+  assert(fields_begin && fields_begin->size()==4);
+  assert(0 == strcmp((*fields_begin)[0]->getName(), "tms_utime"));
+  assert(0 == strcmp((*fields_begin)[1]->getName(), "tms_stime"));
+  BPatch_Vector<BPatch_variableExpr*>* fields_end = tms_buf_begin->getComponents();
+  assert(fields_end && fields_end->size()==4);
+  assert(0 == strcmp((*fields_end)[0]->getName(), "tms_utime"));
+  assert(0 == strcmp((*fields_end)[1]->getName(), "tms_stime"));
+
+  //char funcName[64];
+  BPatch_snippet *result = new BPatch_constExpr("\n<ARUM> [%p] %jd %jd %jd %jd %jd %jd\n");
   printfArgs.push_back(result);
   //printfArgs.push_back(new BPatch_constExpr(function->getName(funcName, 64))); // %s
   printfArgs.push_back(new BPatch_originalAddressExpr()); // %p
-  printfArgs.push_back(diffTime);
+  printfArgs.push_back((*fields_begin)[0]);
+  printfArgs.push_back((*fields_end)[0]);
+  printfArgs.push_back((*fields_begin)[1]);
+  printfArgs.push_back((*fields_end)[1]);
+  printfArgs.push_back(beginTime);
+  printfArgs.push_back(endTime);
   printfCall = new BPatch_funcCallExpr(*(printfFuncs[0]), printfArgs);
 }
 
@@ -98,10 +138,11 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_function * function) {
 
   //insert the code at the entry point
   handle->insertSnippet(*assignBeginTime,*entry_point);
+  handle->insertSnippet(*assignBeginTMSAdd, *entry_point);
   //at the end. note that the order of inserting the codes matters, the first insertion codes will be executed last (like a stack) 
   handle->insertSnippet(*printfCall, *exit_point);
-  handle->insertSnippet(*assignDiffTime, *exit_point);
   handle->insertSnippet(*assignEndTime,*exit_point);
+  handle->insertSnippet(*assignEndTMSAdd, *entry_point);
 }
 
 void instrumentProg(int argc, char* argv[], char* envp[]) {
@@ -136,8 +177,8 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
       // gather all functions in the executable, and their names
       allFuncs = getExecutableFuncs(appImage);
       printFuncNames(allFuncs);
-      for (unsigned fIdx=0; fIdx < (*allFuncs).size(); fIdx++) {
-      //for (unsigned fIdx=0; fIdx < 1; fIdx++) {
+      //for (unsigned fIdx=0; fIdx < (*allFuncs).size(); fIdx++) {
+      for (unsigned fIdx=1; fIdx < (*allFuncs).size(); fIdx++) {
 	BPatch_function *curfunc = (*allFuncs)[fIdx];
 	BPatch_Vector<const char*> funcNames;
 	curfunc->getNames(funcNames);
