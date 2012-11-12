@@ -24,8 +24,7 @@ EXA	= $(EX1) $(EX2) $(EX3) $(EX4) $(EX5) $(EX6)
 all: Interrupts module $(ARCHIVE) $(EXE)
 
 module: 
-	# make -C $(KDIR) M=$(PWD) modules
-	echo "Skipping Module"
+	 make -C $(KDIR) M=$(PWD) modules
 
 clean:  rmexe rmobj rmmod rmint
 

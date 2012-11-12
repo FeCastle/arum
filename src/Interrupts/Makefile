@@ -1,6 +1,6 @@
 YACC	= /usr/bin/yacc
 LEX	= /usr/bin/lex
-SED	= /bin/sed
+SED	= /usr/bin/sed
 IntTargets = Interrupts.lex.C Interrupts.tab.h Interrupts.tab.C
 
 .l.C:
