@@ -1,4 +1,4 @@
-SRC	= EventTest.C CounterTest.C HwCtrTest.C Loop.C Permutation.C Binary.C FunctionCall.C
+SRC	= EventTest.C CounterTest.C HwCtrTest.C Loop.C Permutation.C Binary.C FunctionCall.C Primes.C
 HDR	= $(SRC:.C=.h) defs.h
 OBJ	= $(SRC:.C=.o)
 
@@ -10,7 +10,7 @@ INC	= -I $(INCDIR)
 ### These need the archive library (libarum.a) ###
 ARUMEXE	= EventTest CounterTest HwCtrTest 
 ### These do not need to be linked with archive ###
-TESTEXE = Loop Permutation Binary FunctionCall
+TESTEXE = Loop Permutation Binary FunctionCall Primes
 
 RM	= /bin/rm
 MV	= /bin/mv

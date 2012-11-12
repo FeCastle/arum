@@ -10,7 +10,7 @@ Test Case ID	Test Case		Description				       Result/Status	Comment / Reason for
 3		Binary.C		Converts ascii string to binary values		Fail	        may be in a few milliseconds
 4		FunctionCall.C	        Accepts input from stdin and prints results     Pass            Give large input so as to get
 				        multiple cascaded funtion calls		                        considerable execution time	
-
+5               Primes.C                Generates prime numbers                         Pass
 
 user1@ubuntu:~/amritha/OS/arum/tests ./Arum Loop
 non-option ARGV-elements: Loop 
@@ -55,4 +55,9 @@ User time is 0.3 seconds
 System time is 0.0 seconds
 
 
-
+user1@ubuntu:~/amritha/OS/arum/src$ ./Arum prime
+non-option ARGV-elements: prime 
+Finding first 100000 prime numbers
+Total 9592 primes found
+User time is 25.3 seconds
+System time is 0.0 seconds
