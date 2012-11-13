@@ -21,7 +21,7 @@ ECHO    = echo
 
 EXA	= $(EX1) $(EX2) $(EX3) $(EX4) $(EX5) $(EX6)
 
-all: Interrupts module $(ARCHIVE) $(EXE)
+all: Interrupts $(ARCHIVE) $(EXE)
 
 module: 
 	 make -C $(KDIR) M=$(PWD) modules
