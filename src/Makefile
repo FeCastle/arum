@@ -57,6 +57,7 @@ CXXFLAGS=-O3 $(DEBUG_FLAGS) -I../bprobe/include
 
 $(EXE):	$(ARCHIVE)
 	$(CXX) -o $(EXE) $(CXXFLAGS)-rdynamic -Wl,-rpath=../bprobe/lib $(ARCHIVE) -L../bprobe/lib -lbinpro -Wl,--whole-archive -liberty -Wl,--no-whole-archive
+	cp $(EXE) ../bin/
 
 $(ARCHIVE): $(OBJ)
 	ar -ruv $(ARCHIVE) $(OBJ)

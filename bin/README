@@ -1,0 +1,7 @@
+1. How to run Arum with binary probe.
+i). go to bin directory
+ii). source env.sh
+iii). ./Arum hello
+
+2. What's the result of the run.
+The result now is a file named arum_temp.txt
