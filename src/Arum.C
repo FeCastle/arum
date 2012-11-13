@@ -45,6 +45,8 @@
 #include "Counters.h"
 #include "Arum.h"
 
+#include <binpro.h>
+
 /**
 static int  parse_args( int argc, char* argv[], Main m);
 static void print_args( int argc, char* argv[] );
@@ -167,6 +169,9 @@ main( int argc, char* argv[], char* envp[] )
        cntrs.printReport();
     }
     //delete timer;
+
+    // binary probe
+    instrumentProg(argc-1, argv+1, envp);
 }
 
 // Main::parse_args()

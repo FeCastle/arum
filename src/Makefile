@@ -35,7 +35,7 @@ clean:  rmexe rmobj rmmod rmint
 DEBUG_FLAGS = -g 
 
 ##CXXFLAGS=-O3 $(INC)
-CXXFLAGS=-O3 $(DEBUG_FLAGS)
+CXXFLAGS=-O3 $(DEBUG_FLAGS) -I../bprobe/include
 
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $<
@@ -56,7 +56,7 @@ CXXFLAGS=-O3 $(DEBUG_FLAGS)
 	$(RM)  y.tab.c y.tab.h
 
 $(EXE):	$(ARCHIVE)
-	$(CXX) -o $(EXE) $(CXXFLAGS) $(ARCHIVE)
+	$(CXX) -o $(EXE) $(CXXFLAGS)-rdynamic -Wl,-rpath=../bprobe/lib $(ARCHIVE) -L../bprobe/lib -lbinpro -Wl,--whole-archive -liberty -Wl,--no-whole-archive
 
 $(ARCHIVE): $(OBJ)
 	ar -ruv $(ARCHIVE) $(OBJ)
