@@ -18,17 +18,17 @@ clock_t fake(struct tms* buf) {
   return ttime++;
 }
 
-void foo(void) {
+void foo(int num) {
   int i;
   clock_t t1, t2;
   struct tms time1, time2;
   printf("foo\n");
   t1 = times(&time1);
   volatile int uv = 0;
-  for(i=0; i<2000000; i++) {
+  for(i=0; i<num*1000; i++) {
     uv++;
   }
-  for(i=0; i<2000; i++) {
+  for(i=0; i<num; i++) {
     int fd = open("temp.txt", O_CREAT, S_IWUSR);
     write(fd, &i, sizeof(i));
     close(fd);
@@ -38,20 +38,30 @@ void foo(void) {
   printf("%jd %jd %jd %jd %jd %jd\n", time1.tms_utime, time2.tms_utime, time1.tms_stime, time2.tms_stime, t1, t2);
 }
 
+void recursive(int i) {
+  if(i<=0) {
+    return;
+  } else {
+    foo(20);
+    recursive(i-1);
+  }
+}
+
 int main(void) {
   int i;
   printf("hello, world!\n");
   volatile int uv = 0;
-  foo();
-  for(i=0; i<2000000; i++) {
+  foo(200);
+  for(i=0; i<200000; i++) {
     uv++;
   }
-  for(i=0; i<2000; i++) {
+  for(i=0; i<200; i++) {
     int fd = open("temp.txt", O_CREAT, S_IWUSR);
     write(fd, &i, sizeof(i));
     close(fd);
     remove("temp.txt");
   }
-  foo();
+  recursive(10);
+  foo(200);
   return 0;
 }
