@@ -20,6 +20,7 @@
 #include "BPatch_binaryEdit.h"
 #include "BPatch_function.h"
 #include "BPatch_module.h"
+#include "binpro.h"
 
 using namespace Dyninst;
 using namespace std;
@@ -114,7 +115,7 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
   assert(0 == strcmp((*fields_end)[1]->getName(), "tms_stime"));
 
   //char funcName[64];
-  BPatch_snippet *result = new BPatch_constExpr("<ARUM_TIMES> [%p] %jd %jd %jd %jd %jd %jd\n");
+  BPatch_snippet *result = new BPatch_constExpr("\n<ARUM_TIMES> %p %jd %jd %jd %jd %jd %jd\n");
   printfArgs.push_back(result);
   //printfArgs.push_back(new BPatch_constExpr(function->getName(funcName, 64))); // %s
   printfArgs.push_back(new BPatch_originalAddressExpr()); // %p
@@ -138,6 +139,8 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
   handle->insertSnippet(*assignEndTMSAdd, *entry_point);
 }
 
+static int s_funcnum = 0;
+static int s_invokenum = 0;
 void instrumentProg(int argc, char* argv[], char* envp[]) {
   char* name = argv[0];
 
@@ -180,7 +183,7 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
 	printf("Register function: %20s\n",funcNames[0]);
 #endif
 	char tempstr[1024];
-	sprintf(tempstr, "<ARUM_FUNCS> [%s] [0x%lx 0x%lx]\n",funcNames[0],
+	sprintf(tempstr, "\n<ARUM_FUNCS> %s 0x%lx 0x%lx\n",funcNames[0],
 	     (long)curfunc->getBaseAddr(),
 	     (long)curfunc->getBaseAddr() + curfunc->getSize());
 	write(fd, tempstr, strlen(tempstr));
@@ -232,7 +235,7 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
     wait(&status);
   } 
 
-  //when done with Arum, we remove the temporary application binary
+  // when done with Arum, we remove the temporary application binary
   if(strcmp(new_name, name) != 0) {
     if(remove(new_name) != 0) {
 #ifdef DEBUG_M
@@ -241,7 +244,107 @@ void instrumentProg(int argc, char* argv[], char* envp[]) {
     }	
   }
 
-  //remove("arum_temp.txt");
+  // filter
+  FILE* infile = fopen("arum_temp.txt", "r+");
+  if(infile == NULL) {
+    printf("failed to open file arum_temp.txt\n");
+    return;
+  }
+  FILE* outfile = fopen("arum.txt", "w+");
+  if(outfile == NULL) {
+    printf("failed to open file arum.txt\n");
+    return;
+  }
+
+  s_funcnum = 0;
+  s_invokenum = 0;
+  const char* pattern1 = "<ARUM_FUNCS>";
+  const char* pattern2 = "<ARUM_TIMES>";
+  char buf[256];
+  while(NULL != fgets(buf, 128, infile)) {
+    if(strlen(buf) >= strlen(pattern1)) {
+      if(0 == memcmp(buf, pattern1, strlen(pattern1))) {
+	fprintf(outfile, "%s", buf);
+	s_funcnum++;
+      } else if(0 == memcmp(buf, pattern2, strlen(pattern2))) {
+	fprintf(outfile, "%s", buf);
+	s_invokenum++;
+      }
+    }
+  }
+
+  fclose(outfile);
+  fclose(infile);
+
+  // delete the output file
+  remove("arum_temp.txt");
+}
+
+struct FuncInfo {
+  char funcname[128];
+  long startadd;
+  long endadd;
+};
+void getProfInfo(struct ProfInfo* profInfo) {
+  assert(profInfo != NULL);
+  profInfo->invokenum = s_invokenum;
+  if(profInfo->invoke == NULL) {
+    return;
+  }
+
+  struct FuncInfo* funcInfo = new struct FuncInfo[s_funcnum];
+  assert(funcInfo != NULL);
+
+  // filter
+  FILE* infile = fopen("arum.txt", "r+");
+  if(infile == NULL) {
+    printf("failed to open file arum.txt\n");
+    return;
+  }
+
+  int funcind = 0;
+  int invokeind = 0;
+  const char* pattern1 = "<ARUM_FUNCS>";
+  const char* pattern2 = "<ARUM_TIMES>";
+  char buf[256];
+  while(NULL != fgets(buf, 128, infile)) {
+    if(strlen(buf) >= strlen(pattern1)) {
+      if(0 == memcmp(buf, pattern1, strlen(pattern1))) {
+	sscanf(buf, "<ARUM_FUNCS> %s 0x%lx 0x%lx\n", funcInfo[funcind].funcname, &(funcInfo[funcind].startadd), &(funcInfo[funcind].endadd));
+	funcind++;
+      } else if(0 == memcmp(buf, pattern2, strlen(pattern2))) {
+	int i;
+	void* add;
+	clock_t ustart;
+	clock_t uend;
+	clock_t sstart;
+	clock_t send;
+	clock_t start;
+	clock_t end;
+	sscanf(buf, "<ARUM_TIMES> %p %jd %jd %jd %jd %jd %jd\n", &add, &ustart, &uend, &sstart, &send, &start, &end);
+	for(i=0; i<s_funcnum; i++) {
+	  if((long)add>=funcInfo[i].startadd && (long)add<=funcInfo[i].endadd) {
+	    break;
+	  }
+	}
+	assert(i != s_funcnum);
+	strcpy(profInfo->invoke[invokeind].funcname, funcInfo[i].funcname);
+	profInfo->invoke[invokeind].ustart = ustart * 1.0 / sysconf(_SC_CLK_TCK);
+	profInfo->invoke[invokeind].uend = uend * 1.0 / sysconf(_SC_CLK_TCK);
+	profInfo->invoke[invokeind].sstart = sstart * 1.0 / sysconf(_SC_CLK_TCK);
+	profInfo->invoke[invokeind].send = send * 1.0 / sysconf(_SC_CLK_TCK);
+	profInfo->invoke[invokeind].start = start * 1.0 / sysconf(_SC_CLK_TCK);
+	profInfo->invoke[invokeind].end = end * 1.0 / sysconf(_SC_CLK_TCK);
+	invokeind++;
+      }
+    }
+  }
+
+  fclose(infile);
+
+  remove("arum.txt");
+
+  delete funcInfo;
 }
 
 /*
