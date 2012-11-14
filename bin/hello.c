@@ -25,13 +25,14 @@ void foo(void) {
   printf("foo\n");
   t1 = times(&time1);
   volatile int uv = 0;
-  for(i=0; i<20000000; i++) {
+  for(i=0; i<2000000; i++) {
     uv++;
   }
-  for(i=0; i<200000; i++) {
+  for(i=0; i<2000; i++) {
     int fd = open("temp.txt", O_CREAT, S_IWUSR);
     write(fd, &i, sizeof(i));
     close(fd);
+    remove("temp.txt");
   }
   t2 = times(&time2);
   printf("%jd %jd %jd %jd %jd %jd\n", time1.tms_utime, time2.tms_utime, time1.tms_stime, time2.tms_stime, t1, t2);
@@ -41,13 +42,15 @@ int main(void) {
   int i;
   printf("hello, world!\n");
   volatile int uv = 0;
-  for(i=0; i<20000000; i++) {
+  foo();
+  for(i=0; i<2000000; i++) {
     uv++;
   }
-  for(i=0; i<200000; i++) {
+  for(i=0; i<2000; i++) {
     int fd = open("temp.txt", O_CREAT, S_IWUSR);
     write(fd, &i, sizeof(i));
     close(fd);
+    remove("temp.txt");
   }
   foo();
   return 0;
