@@ -70,6 +70,16 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
 
   BPatch_type* longType = appImage->findType("long");
   assert(longType);
+
+  BPatch_variableExpr* count = handle->malloc(*longType);
+  int zero = 0;
+  count->writeValue(&zero);
+  BPatch_arithExpr* countPlusOne = new BPatch_arithExpr(BPatch_plus, *count, BPatch_constExpr(1));
+  BPatch_arithExpr* incCount = new BPatch_arithExpr(BPatch_assign, *count, *countPlusOne);
+  BPatch_arithExpr* countMinusOne = new BPatch_arithExpr(BPatch_minus, *count, BPatch_constExpr(1));
+  BPatch_arithExpr* decCount = new BPatch_arithExpr(BPatch_assign, *count, *countMinusOne);
+  BPatch_boolExpr* countZero = new BPatch_boolExpr(BPatch_le, *count, BPatch_constExpr(0));
+
   // Create tms type
   BPatch_Vector<char*> names;
   BPatch_Vector<BPatch_type*> types;
@@ -102,7 +112,9 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
   BPatch_variableExpr *endTime = handle->malloc(*longType);
 
   BPatch_arithExpr* assignBeginTime = new BPatch_arithExpr(BPatch_assign, *beginTime, timeCall_begin);
+  BPatch_ifExpr* condAssignBeginTime = new BPatch_ifExpr(*countZero, *assignBeginTime);
   BPatch_arithExpr* assignEndTime = new BPatch_arithExpr(BPatch_assign, *endTime, timeCall_end);
+  BPatch_ifExpr* condAssignEndTime = new BPatch_ifExpr(*countZero, *assignEndTime);
   //assignDiffTime = new BPatch_arithExpr(BPatch_assign, *diffTime, BPatch_arithExpr(BPatch_minus,*endTime,*beginTime));
 
   BPatch_Vector<BPatch_variableExpr*>* fields_begin = tms_buf_begin->getComponents();
@@ -126,14 +138,17 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
   printfArgs.push_back(beginTime);
   printfArgs.push_back(endTime);
   BPatch_funcCallExpr* printfCall = new BPatch_funcCallExpr(*(printfFuncs[0]), printfArgs);
+  BPatch_ifExpr* condPrintfCall = new BPatch_ifExpr(*countZero, *printfCall);
 
   vector<BPatch_point *> *entry_point = function->findPoint(BPatch_entry);
   vector<BPatch_point *> *exit_point = function->findPoint(BPatch_exit);
 
   //insert the code at the entry point
+  handle->insertSnippet(*incCount,*entry_point);
   handle->insertSnippet(*assignBeginTime,*entry_point);
   handle->insertSnippet(*assignBeginTMSAdd, *entry_point);
   //at the end. note that the order of inserting the codes matters, the first insertion codes will be executed last (like a stack) 
+  handle->insertSnippet(*decCount,*entry_point);
   handle->insertSnippet(*printfCall, *exit_point);
   handle->insertSnippet(*assignEndTime,*exit_point);
   handle->insertSnippet(*assignEndTMSAdd, *entry_point);
