@@ -71,7 +71,7 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
   BPatch_type* longType = appImage->findType("long");
   assert(longType);
 
-  BPatch_variableExpr* count = handle->malloc(*longType);
+  BPatch_variableExpr* count = handle->malloc(*(appImage->findType("int")));
   int zero = 0;
   count->writeValue(&zero);
   BPatch_arithExpr* countPlusOne = new BPatch_arithExpr(BPatch_plus, *count, BPatch_constExpr(1));
@@ -145,13 +145,13 @@ void registerFunction(BPatch_addressSpace *handle, BPatch_image * appImage, BPat
 
   //insert the code at the entry point
   handle->insertSnippet(*incCount,*entry_point);
-  handle->insertSnippet(*assignBeginTime,*entry_point);
+  handle->insertSnippet(*condAssignBeginTime,*entry_point);
   handle->insertSnippet(*assignBeginTMSAdd, *entry_point);
   //at the end. note that the order of inserting the codes matters, the first insertion codes will be executed last (like a stack) 
-  handle->insertSnippet(*decCount,*entry_point);
-  handle->insertSnippet(*printfCall, *exit_point);
-  handle->insertSnippet(*assignEndTime,*exit_point);
-  handle->insertSnippet(*assignEndTMSAdd, *entry_point);
+  handle->insertSnippet(*condPrintfCall, *exit_point);
+  handle->insertSnippet(*condAssignEndTime,*exit_point);
+  handle->insertSnippet(*decCount,*exit_point);
+  handle->insertSnippet(*assignEndTMSAdd, *exit_point);
 }
 
 static int s_funcnum = 0;
