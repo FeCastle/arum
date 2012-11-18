@@ -172,6 +172,7 @@ main( int argc, char* argv[], char* envp[] )
     //delete timer;
 
     // binary probe
+    printf("\n=========binary probe=========\n");
     instrumentProg(argc-1, argv+1, envp);
     struct ProfInfo profInfo;
     profInfo.invokenum = 0;
@@ -181,9 +182,12 @@ main( int argc, char* argv[], char* envp[] )
     profInfo.invoke = new struct InvokeInfo[profInfo.invokenum];
     assert(profInfo.invoke);
     getProfInfo(&profInfo);
+    printf("\ncalling trace:\n");
+    printf("  ustart   uend sstart   send  start    end function\n");
+    printf("  ------ ------ ------ ------ ------ ------ --------\n");
     for(int i=0; i<profInfo.invokenum; i++) {
-      printf("<Arum> %s %f %f %f %f %f %f\n", profInfo.invoke[i].funcname, profInfo.invoke[i].ustart, profInfo.invoke[i].uend,
-	     profInfo.invoke[i].sstart, profInfo.invoke[i].send, profInfo.invoke[i].start, profInfo.invoke[i].end);
+      printf("  % 6.2f % 6.2f % 6.2f % 6.2f % 6.2f % 6.2f %s\n", profInfo.invoke[i].ustart, profInfo.invoke[i].uend,
+	     profInfo.invoke[i].sstart, profInfo.invoke[i].send, profInfo.invoke[i].start, profInfo.invoke[i].end, profInfo.invoke[i].funcname);
     }
     delete profInfo.invoke;
 }

@@ -18,50 +18,35 @@ clock_t fake(struct tms* buf) {
   return ttime++;
 }
 
-void foo(int num) {
+void foo(void) {
   int i;
-  clock_t t1, t2;
-  struct tms time1, time2;
-  printf("foo\n");
-  t1 = times(&time1);
   volatile int uv = 0;
-  for(i=0; i<num*1000; i++) {
+  for(i=0; i<4000000; i++) {
     uv++;
   }
-  for(i=0; i<num; i++) {
+  for(i=0; i<60; i++) {
     int fd = open("temp.txt", O_CREAT, S_IWUSR);
     write(fd, &i, sizeof(i));
     close(fd);
     remove("temp.txt");
   }
-  t2 = times(&time2);
-  printf("%jd %jd %jd %jd %jd %jd\n", time1.tms_utime, time2.tms_utime, time1.tms_stime, time2.tms_stime, t1, t2);
+  printf("foo\n");
 }
 
 void recursive(int i) {
   if(i<=0) {
     return;
   } else {
-    foo(20);
+    foo();
     recursive(i-1);
   }
+  printf("recurseive\n");
 }
 
 int main(void) {
-  int i;
-  printf("hello, world!\n");
-  volatile int uv = 0;
-  foo(200);
-  for(i=0; i<200000; i++) {
-    uv++;
-  }
-  for(i=0; i<200; i++) {
-    int fd = open("temp.txt", O_CREAT, S_IWUSR);
-    write(fd, &i, sizeof(i));
-    close(fd);
-    remove("temp.txt");
-  }
-  recursive(10);
-  foo(200);
+  foo();
+  recursive(4);
+  foo();
+  printf("main\n");
   return 0;
 }

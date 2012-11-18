@@ -26,7 +26,7 @@ using namespace Dyninst;
 using namespace std;
 
 
-#define VERBOSE
+//#define VERBOSE
 
 // Register this function as a callback, you cannot
 // change the parameters to this function
@@ -44,19 +44,15 @@ vector< BPatch_function* >* getExecutableFuncs ( BPatch_image *image ) {
 void printFuncNames ( vector <BPatch_function*> *funcs ) {
   BPatch_Vector<const char*> funcNames;
 
-#ifdef VERBOSE
-  printf("Found functions:\n");
-#endif
-
+  printf("\nfunction list:\n");
+  printf("     start      end function\n");
+  printf("  -------- -------- --------\n");
   for (unsigned fIdx=0; fIdx < (*funcs).size(); fIdx++) {
     BPatch_function *curfunc = (*funcs)[fIdx];
     curfunc->getNames(funcNames);
     assert(funcNames.size());
-#ifdef VERBOSE
-      printf("        %20s [0x%lx 0x%lx]\n",funcNames[0],
-	     (long)curfunc->getBaseAddr(),
-	     (long)curfunc->getBaseAddr() + curfunc->getSize());
-#endif
+    printf("  0x%lx 0x%lx %s\n", (long)curfunc->getBaseAddr(),
+	   (long)curfunc->getBaseAddr() + curfunc->getSize(),funcNames[0]);
     funcNames.clear();
   }
   return;
@@ -353,6 +349,12 @@ void getProfInfo(struct ProfInfo* profInfo) {
 	invokeind++;
       }
     }
+  }
+
+  double s = profInfo->invoke[0].start;
+  for(int i=0; i<s_invokenum; i++) {
+    profInfo->invoke[i].start -= s;
+    profInfo->invoke[i].end -= s;
   }
 
   fclose(infile);
