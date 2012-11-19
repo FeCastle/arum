@@ -1,0 +1,28 @@
+To build and test Arum Hardare Counter Module (HwCtr.ko)
+-- Before you can build the module you may need to install the kernel headers.
+-- Example:  sudo apt-get install kernel-headers-$(uname -r)
+
+1.  Build the source
+	cd src
+	make module
+
+2.  Load the kernel module and build character device
+	cd ../tools
+	sudo ./load_hwCtr.sh   
+	
+3.  Create and run the HwCtrTest
+	cd ../tests
+	make HwCtrTest
+	sudo ./HwCtrTest
+
+TODO - You need to add Architecture specific configuration files to /etc/arum
+       this needs to be added to the Makefile(s).  (make install ?)
+	$ sudo mkdir /etc/arum
+	$ sudo cp tests/Intel-15-6 /etc/arum
+	$ sudo chmod 644 /etc/arum/Intel-15-6
+
+NOTE:  If your architecture config files are in a different location (like /foo/bar)
+        $ ARUMDIR="/foo/bar"
+	$ export ARUMDIR
+
+

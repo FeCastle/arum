@@ -1,0 +1,63 @@
+TestReport.txt
+
+* To keep track of test results
+* Logged some expected test results
+
+Test Case ID	Test Case		Description				       Result/Status	Comment / Reason for Deviation
+------------------------------------------------------------------------------------------------------------------------------------
+1		Loop.C			Program with loops for long time		Pass
+2		Permuatation.C	        Gives various permutations of a string		Pass
+3		Binary.C		Converts ascii string to binary values		Fail	        may be in a few milliseconds
+4		FunctionCall.C	        Accepts input from stdin and prints results     Pass            Give large input so as to get
+				        multiple cascaded funtion calls		                        considerable execution time	
+5               Primes.C                Generates prime numbers                         Pass
+
+user1@ubuntu:~/amritha/OS/arum/tests ./Arum Loop
+non-option ARGV-elements: Loop 
+Basic Test using a long loop
+User time is 0.5 seconds
+System time is 0.0 seconds
+
+
+user1@ubuntu:~/amritha/OS/arum/tests ./Arum Permutation
+non-option ARGV-elements: Permutation 
+various permutations of string done
+User time is 0.1 seconds
+System time is 0.0 seconds
+
+user1@ubuntu:~/amritha/OS/arum/tests ./Arum Binary
+non-option ARGV-elements: Binary 
+done
+User time is 0.0 seconds
+System time is 0.0 seconds
+
+
+user1@ubuntu:~/amritha/OS/arum/tests ./Arum FunctionCall
+non-option ARGV-elements: ttt 
+ Enter a large number, say over 5000
+6000
+679823600
+User time is 0.3 seconds
+System time is 0.0 seconds
+user1@ubuntu:~/amritha/OS/arum/src$ ./Arum foo FunctionCall
+non-option ARGV-elements: foo ttt 
+ Enter a large number, say over 5000
+6000
+679823600
+User time is 0.2 seconds
+System time is 0.0 seconds
+user1@ubuntu:~/amritha/OS/arum/src$ ./Arum add FunctionCall
+non-option ARGV-elements: add ttt 
+ Enter a large number, say over 5000
+6000
+679823600
+User time is 0.3 seconds
+System time is 0.0 seconds
+
+
+user1@ubuntu:~/amritha/OS/arum/src$ ./Arum prime
+non-option ARGV-elements: prime 
+Finding first 100000 prime numbers
+Total 9592 primes found
+User time is 25.3 seconds
+System time is 0.0 seconds

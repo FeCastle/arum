@@ -2,8 +2,19 @@
 *.o
 *.a
 
+# git files
+*.orig
+
+# VIM files
+*.swp
+
+# Interrupts 
+/src/Interrupts/Interrupts.*.C
+/src/Interrupts/Interrupts.*.h
+
 # Build products
 src/Arum
 tests/EventTest
 tests/CounterTest
+tests/CpuIdTest
 

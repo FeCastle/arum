@@ -1,0 +1,22 @@
+mv libdyninstAPI.so libdyninstAPI.so.bak
+mv libcommon.so libcommon.so.bak
+mv libcommon.so.7 libcommon.so.7.bak
+mv libdynC_API.so libdynC_API.so.bak
+mv libdynC_API.so.7 libdynC_API.so.7.bak
+mv libdyninstAPI_RT_m32.so libdyninstAPI_RT_m32.so.bak
+mv libdyninstAPI_RT.so libdyninstAPI_RT.so.bak
+mv libdyninstAPI_RT.so.7 libdyninstAPI_RT.so.7.bak
+mv libdyninstAPI.so.7 libdyninstAPI.so.7.bak
+mv libinstructionAPI.so libinstructionAPI.so.bak
+mv libinstructionAPI.so.2 libinstructionAPI.so.2.bak
+mv libinstructionAPI.so.7 libinstructionAPI.so.7.bak
+mv libparseAPI.so libparseAPI.so.bak
+mv libparseAPI.so.1 libparseAPI.so.1.bak
+mv libparseAPI.so.7 libparseAPI.so.7.bak
+mv libpcontrol.so libpcontrol.so.bak
+mv libpcontrol.so.0 libpcontrol.so.0.bak
+mv libstackwalk.so libstackwalk.so.bak
+mv libstackwalk.so.2 libstackwalk.so.2.bak
+mv libsymtabAPI.so libsymtabAPI.so.bak
+mv libsymtabAPI.so.7 libsymtabAPI.so.7.bak
+

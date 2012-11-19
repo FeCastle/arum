@@ -1,4 +1,6 @@
 obj-m := HwCtr.o
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
 
 # SRY	= Interrupts.tab.y
 # SRL	= Interrupts.lex.l
@@ -7,10 +9,6 @@ obj-m := HwCtr.o
 SRC	= Arum.C CpuId.C Events.C Arch.C ResourceUsage.C Utilities.C Counters.C $(SRY:.y=.C) $(SRL:.l=.C)
 HDR	= $(SRC:.C=.h) defs.h
 OBJ	= $(SRC:.C=.o)
-##LIBDIR	= ../lib
-##INCDIR	= ../include
-##LIB	= timer
-##INC	= -I $(INCDIR)
 EXE	= Arum
 ARCHIVE = libarum.a
 
@@ -19,26 +17,25 @@ MV	= /bin/mv
 YACC	= /usr/bin/yacc
 LEX	= /usr/bin/lex
 SED	= /usr/bin/sed
+ECHO    = echo
 
 EXA	= $(EX1) $(EX2) $(EX3) $(EX4) $(EX5) $(EX6)
 
-all: $(ARCHIVE) $(EXE)
+all: Interrupts $(ARCHIVE) $(EXE)
 
-clean:  rmexe rmobj
+module: 
+	 make -C $(KDIR) M=$(PWD) modules
 
-#	$(RM) $(EXE)
-#	$(RM) *.o
-#	$(RM) Interrupts.lex.C
-#	$(RM) Interrupts.tab.h
-#	$(RM) Interrupts.tab.C
+clean:  rmexe rmobj rmmod rmint
 
 ## POSSIBLE DEBUG FLAGS
-##    -DDEBUG_CPU  - Adds printf to CpuId module
+##    -DDEBUG_ARCH  - Adds printf to Arch module
+##    -DDEBUG_CPU   - Adds printf to CpuId module
 ##    -DDEBUG_COUNT - Adds printf to Counters module
-DEBUG_FLAGS = -DDEBUG_CPU
+DEBUG_FLAGS = -g 
 
 ##CXXFLAGS=-O3 $(INC)
-CXXFLAGS=-O3 $(DEBUG_FLAGS)
+CXXFLAGS=-O3 $(DEBUG_FLAGS) -I../bprobe/include
 
 .C.o:
 	$(CXX) $(CXXFLAGS) -c $<
@@ -59,22 +56,30 @@ CXXFLAGS=-O3 $(DEBUG_FLAGS)
 	$(RM)  y.tab.c y.tab.h
 
 $(EXE):	$(ARCHIVE)
-	$(CXX) -o $(EXE) $(CXXFLAGS) $(ARCHIVE)
+	$(CXX) -o $(EXE) $(CXXFLAGS)-rdynamic -Wl,-rpath=../bprobe/lib $(ARCHIVE) -L../bprobe/lib -lbinpro -Wl,--whole-archive -liberty -Wl,--no-whole-archive
+	cp $(EXE) ../bin/
 
 $(ARCHIVE): $(OBJ)
 	ar -ruv $(ARCHIVE) $(OBJ)
 
 $(OBJ):	$(HDR)
 
+Interrupts: force_it
+	$(ECHO) looking into Interrupts : $(MAKE) $(MFLAGS)
+	cd Interrupts; $(MAKE) $(MFLAGS)
+
 rmexe:
 	$(RM) -rf $(EXE)
 
 rmobj:
 	$(RM) -rf $(OBJ) $(SRY:.y=.C) $(SRY:.y=.h) $(SRL:.l=.C)
+	$(RM) -f *.a
 
 rmmod:
 	$(RM) -rf HwCtr.ko HwCtr.mod.c HwCtr.mod.o HwCtr.o .HwCtr.ko.cmd .HwCtr.mod.o.cmd .HwCtr.o.cmd .tmp_versions/
 
-Interrupts.lex.C:	Interrupts.lex.l
-Interrupts.tab.h:	Interrupts.tab.y
-Interrupts.tab.C:	Interrupts.tab.y
+rmint:
+	cd Interrupts; $(MAKE) clean
+
+force_it: 
+	true

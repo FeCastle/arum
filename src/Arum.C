@@ -20,6 +20,10 @@
 * 
 *  -f | --file filename   Read configuration settings from a file (i.e., the 
 *                         counters to specify, etc.)
+*
+*  -r | --resources       Display application resources used from getrusage
+*                         such as page faults, block I/O, page faults, and 
+*                         context switches.
 */
 
 #include <time.h>
@@ -33,6 +37,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <getopt.h>
+#include <assert.h>
 
 //#include "Timer.h"
 //#include "GetTimeOfDay.h"
@@ -40,6 +45,8 @@
 //#include "CpuId.h"
 #include "Counters.h"
 #include "Arum.h"
+
+#include <binpro.h>
 
 /**
 static int  parse_args( int argc, char* argv[], Main m);
@@ -86,6 +93,7 @@ main( int argc, char* argv[], char* envp[] )
             arum.perfCounters = true;
          }
       } else {
+	fprintf (stderr, "Warning:  inCompatible events for device\n");
          arum.perfCounters = false;
       }
    } 
@@ -116,7 +124,11 @@ main( int argc, char* argv[], char* envp[] )
            }
         }
         
-        execve( argv[argc -1], argv + (argc - 1), envp);
+		// If this returns the program did not succeed
+        execve( argv[programIndex], argv + (programIndex), envp);
+		fprintf (stderr, "Error:  Unable to execute %s\n", argv[programIndex]);
+		fprintf (stderr, "        May need full path?  (/bin/%s)\n", argv[programIndex]);
+		return 128;
     } else {
         // parent process
 	int status = 0;
@@ -124,7 +136,7 @@ main( int argc, char* argv[], char* envp[] )
     }
     //Stop Timers
     //double e = timer->seconds();
-    ResourceUsage ru( ResourceUsage::CHILDREN );
+    ResourceUsage childUsage( ResourceUsage::CHILDREN );
 
     if (arum.perfCounters){    
        //Read Counters -- should do in a loop (until no more to read or error)
@@ -140,14 +152,44 @@ main( int argc, char* argv[], char* envp[] )
        rv = cntrs.closeDevice();
     }
 
-    printf("User time is %.1lf seconds\n", ru.user_time());
-    printf("System time is %.1lf seconds\n", ru.sys_time());
+    printf("User time    %.4lfs\n", childUsage.user_time());
+    printf("System time  %.4lfs\n", childUsage.sys_time());
     //printf("Elapsed time is %.1lf seconds\n", e-s);
+
+    if (arum.resourceCounters) {
+        printf("maxrss  - Max resident set size      %ld Kb\n",       childUsage.maxrss());
+        printf("minflt  - Page faults without I/O    %ld\n",          childUsage.minor_fault());
+        printf("majflt  - Page faults with I/O       %ld\n",          childUsage.major_fault());
+        printf("inblock - File system input          %ld blocks\n",   childUsage.in_block());
+        printf("oublock - File system output         %ld blocks\n",   childUsage.out_block());
+        printf("nvcsw   - Voluntary context switch   %ld \n",         childUsage.vol_ctx_sw());
+        printf("nivcsw  - Involuntary context switch %ld \n",         childUsage.invol_ctx_sw());
+    }
 
     if (arum.perfCounters) {
        cntrs.printReport();
     }
     //delete timer;
+
+    // binary probe
+    printf("\n=========binary probe=========\n");
+    instrumentProg(argc-1, argv+1, envp);
+    struct ProfInfo profInfo;
+    profInfo.invokenum = 0;
+    profInfo.invoke = NULL;
+    getProfInfo(&profInfo);
+    assert(profInfo.invokenum != 0);
+    profInfo.invoke = new struct InvokeInfo[profInfo.invokenum];
+    assert(profInfo.invoke);
+    getProfInfo(&profInfo);
+    printf("\ncalling trace:\n");
+    printf("  ustart   uend sstart   send  start    end function\n");
+    printf("  ------ ------ ------ ------ ------ ------ --------\n");
+    for(int i=0; i<profInfo.invokenum; i++) {
+      printf("  % 6.2f % 6.2f % 6.2f % 6.2f % 6.2f % 6.2f %s\n", profInfo.invoke[i].ustart, profInfo.invoke[i].uend,
+	     profInfo.invoke[i].sstart, profInfo.invoke[i].send, profInfo.invoke[i].start, profInfo.invoke[i].end, profInfo.invoke[i].funcname);
+    }
+    delete profInfo.invoke;
 }
 
 // Main::parse_args()
@@ -177,7 +219,8 @@ Main::parse_args( int argc, char* argv[])
     while (1) {
        int option_index = 0;
 
-       c = getopt_long (argc, argv, "h:mf:", long_options,
+       // Add a '+' in front to quit processing when a NON option argument is present
+       c = getopt_long (argc, argv, "+rh:mf:", long_options,
                         &option_index);
        if (c == -1) {
           break;
@@ -215,7 +258,8 @@ Main::parse_args( int argc, char* argv[])
                             MAX_EVENTS_LEN);
                         return error;  
                      }
-                  } else {
+                  }
+                  else {
                   }
                 } 
 #ifdef DEBUG_M
@@ -279,6 +323,10 @@ Main::parse_args( int argc, char* argv[])
 #endif
              break;
 
+          case 'r':
+              resourceCounters = 1;
+              break;
+
           case 'f':
              //short option for config file
              if (optarg) {
@@ -318,14 +366,27 @@ Main::parse_args( int argc, char* argv[])
 
     } //END_WHILE
 
+	if (resourceFlag) {
+		// printf ("Long option --resources is set.\n");
+    	resourceCounters = 1;
+	}
+
     if (optind < argc) {
        // These are the remaining arguments, should be the executable that
        // Arum will launch
+       programIndex = optind;
+#ifdef DEBUG_M
+       printf ("Program starts at index:  %d", programIndex);
        printf ("non-option ARGV-elements: ");
        while (optind < argc){
-          printf ("%s ", argv[optind++]);
+          printf ("%s - ", argv[optind++]);
        } 
        printf ("\n");
+#endif
+    }
+    else {
+        printf (" - EXEC option required\n");
+        return error;
     }
 
     return 0;
@@ -339,7 +400,24 @@ Main::parse_args( int argc, char* argv[])
 void
 Main::print_args( int argc, char* argv[] )
 {
-    printf("Usage: %s [args...] program [program args]\n", argv[0]);
+	fprintf(stderr, "Usage: %s [arum options] EXEC [EXEC opttions]\n"
+	, argv[0]);
+	fprintf(stderr, "Execute program EXEC [EXEC options] and display resource usage.\n");
+	fprintf(stderr, "\n"); 
+	fprintf(stderr, "Option summary:\n");
+	fprintf(stderr, "  -h | --events <LIST>   LIST of hardware counter events to collect; separate\n");
+	fprintf(stderr, "                         event names by white space.\n");
+	fprintf(stderr, "\n"); 
+	fprintf(stderr, "  -m | --mulitplex       This turns on time multiplexing for hardware counter\n");
+	fprintf(stderr, "                         collection.\n");
+	fprintf(stderr, "\n"); 
+	fprintf(stderr, "  -f | --file <FILE>     Read configuration settings from <FILE> (i.e., the\n");
+	fprintf(stderr, "                         counters to specify, etc.)\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "  -r | --resources       Display application resources used from getrusage\n");
+	fprintf(stderr, "                         such as page faults, block I/O, page faults, and\n");
+	fprintf(stderr, "                         context switches.\n");
+	fprintf(stderr, "\n");
 }
 
 // Main::Main()
@@ -350,6 +428,7 @@ Main::Main(){
    configFile = new char[MAX_FILENAME_LEN + 1];
    eventsListStr = new char [MAX_EVENTS_LEN + 1];
    perfCounters = false;
+   resourceCounters = false;
 
    long_options[0].name = "events";
    long_options[0].has_arg = 1;
@@ -370,6 +449,11 @@ Main::Main(){
    long_options[3].has_arg = 0;
    long_options[3].flag = 0;
    long_options[3].val = 0;
+
+   long_options[3].name = "resources";
+   long_options[3].has_arg = 0;
+   long_options[3].flag = &resourceFlag;
+   long_options[3].val = 1;
 }
 
 // Main::~Main()

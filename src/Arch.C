@@ -31,16 +31,28 @@ Arch::readFile()
 {
    bool rv;
    char filename[MAX_ARCH_FILE_LEN];
+   char *arumEnvDir;
    char line [MAX_LINE_LEN];
    ifstream fin;
 
    memset (filename, '\0', MAX_ARCH_FILE_LEN);
-  
+   if ((arumEnvDir = getenv("ARUMDIR")) == NULL) {
+        strncpy (filename, "/etc/arum", MAX_ARCH_FILE_LEN);
+   }
+   else {
+        strncpy (filename, arumEnvDir, MAX_ARCH_FILE_LEN);
+   }
+   strncat (filename, "/", MAX_ARCH_FILE_LEN);
    if (this->archId == INTEL_15_6_ID) {
-      strcpy(filename, INTEL_15_6_STR);
+      strncat(filename, INTEL_15_6_STR, MAX_ARCH_FILE_LEN);
+   } else if (this->archId == INTEL_6_7_ID) {
+      /* TODO - (start) Create INTEL_6_7_STR architecture file */
+      strncat(filename, INTEL_15_6_STR, MAX_ARCH_FILE_LEN);
+      /* TODO - (end)   Create INTEL_6_7_STR architecture file */
    } else if (this->archId == AMD_15_65_ID) {
-      strcpy (filename, AMD_15_65_STR);
+      strncat (filename, AMD_15_65_STR, MAX_ARCH_FILE_LEN);
    } else {
+      fprintf(stderr, "ERROR:  Unknown Architecture!\n");
       return false;
    }
 
@@ -79,10 +91,11 @@ Arch::parseEvent(EventNode * e)
    char cAddr[MAX_ADDR_AS_CHAR_LEN];
    char tempName[MAX_LINE_LEN];   
 
-   // make sure iterator is set
-   if (this->iterator == NULL) {
-	fprintf (stderr, "Warning:  parseEvent()  Iterator not set!\n");
-      	rv = false;  //could not add an event
+
+   // Make sure Architecture is supported
+   if (this->iterator == NULL || this->archId == NONSUPPORT_ID) {
+      fprintf(stderr, "Error:  Iterator is not set.  Unknown architecture.\n");
+      rv = false;  //could not add an event
    }
 
    //make sure iterator points to top of an event
@@ -449,10 +462,14 @@ Arch::determineArchitecture(const char * archStr)
    if (strcmp(archStr, INTEL_15_6_STR) == 0  ) {
       aid = INTEL_15_6_ID;
       strcpy (this->archStr, archStr);
+   } else if (strcmp (archStr, INTEL_6_7_STR) == 0 ) {
+      aid = INTEL_6_7_ID;
+      strcpy (this->archStr, archStr);
    } else if (strcmp (archStr, AMD_15_65_STR) == 0 ) {
       aid = AMD_15_65_ID;
       strcpy (this->archStr, archStr);
    } else {
+     fprintf (stderr, "ERROR:  Unsupported architecture %s\n", archStr);
      aid = NONSUPPORT_ID;
    } 
    return aid;

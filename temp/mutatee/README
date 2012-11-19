@@ -1,0 +1,111 @@
+1. How It Works.
+
+The search space for this assignment is the partial assignment of the people to the seats.
+
+Deepening search is used in this implementation to prune bad states. A different approach is used here. In this approach, a limit is set so that if a certain amount of iterations have finished before finding a better state, then the search procedure will back track to a pre-defined depth. This way, we can control the search process through two parameters: 1, depth. 2, states visited in each iteration. By adjusting these two parameters, we can easily search over the whole state space or focus on some point.
+
+Heuritics are also used here. Each iteration, we greedily explore the best candidate based on current state space. This way, we tend to hit good state earlier.
+
+We also designed a procedure that rotate the seats when a complete state is found. This way, we put the neighbors that don't like each other most at the two sides of the table.
+
+
+2. How to Build
+
+In code directory, type "make".
+
+
+3. How to Run
+
+In command line environment, type "./dinner_party hw1-inst1.txt" or "./dinner_party <hw1-inst1.txt >hw1-soln1.txt" for hw1-inst1.txt. The same will be for the other two input file.
+
+
+4. Experiment
+
+The experiment is conducted in "linux.cecs.pdx.edu".
+
+The result for "hw1-inst1.txt" is as following:
+
+100
+2 0
+9 1
+5 2
+8 3
+4 4
+1 5
+6 6
+7 7
+3 8
+0 9
+
+The result for "hw1-inst2.txt" is as following:
+
+557
+0 0
+10 1
+9 2
+23 3
+6 4
+8 5
+28 6
+15 7
+24 8
+14 9
+19 10
+18 11
+5 12
+4 13
+17 14
+25 15
+11 16
+7 17
+13 18
+2 19
+27 20
+26 21
+1 22
+20 23
+22 24
+29 25
+3 26
+12 27
+21 28
+16 29
+
+The result for "hw1-inst3.txt" is as following:
+
+96
+3 0
+8 1
+15 2
+2 3
+23 4
+10 5
+21 6
+17 7
+20 8
+26 9
+14 10
+27 11
+18 12
+24 13
+1 14
+22 15
+28 16
+11 17
+29 18
+4 19
+19 20
+25 21
+12 22
+9 23
+13 24
+16 25
+7 26
+0 27
+5 28
+6 29
+
+
+5. Things Learned
+
+When the number of people is 30, the whole state space is really huge. Just a very tiny percent of the space can be expored in 60s. When using blind search, the result is not good because most of time, the program is searching in a relatively bad corner of the space. To solve this problem, we introduced deepening search to skim over the whole space, which lead to a chance to avoid keeping searching in bad corner. Heuristics can also help to get to better spaces earlier.

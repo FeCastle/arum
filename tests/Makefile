@@ -1,4 +1,4 @@
-SRC	= EventTest.C CounterTest.C
+SRC	= EventTest.C CounterTest.C HwCtrTest.C Loop.C Permutation.C Binary.C FunctionCall.C Primes.C
 HDR	= $(SRC:.C=.h) defs.h
 OBJ	= $(SRC:.C=.o)
 
@@ -7,7 +7,10 @@ ARCHIVE	= ../src/libarum.a
 
 ##LIB	= timer
 INC	= -I $(INCDIR)
-EXE	= EventTest CounterTest
+### These need the archive library (libarum.a) ###
+ARUMEXE	= EventTest CounterTest HwCtrTest 
+### These do not need to be linked with archive ###
+TESTEXE = Loop Permutation Binary FunctionCall Primes
 
 RM	= /bin/rm
 MV	= /bin/mv
@@ -16,7 +19,7 @@ LEX	= /usr/bin/lex
 SED	= /usr/bin/sed
 ECHO    = echo
 
-all:  $(EXE)
+all:  $(ARUMEXE) $(TESTEXE)
 
 clean:  rmexe rmobj
 
@@ -26,13 +29,16 @@ CXXFLAGS=-O3 $(INC)
 .C.o:
 	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) -c $<
 
-$(EXE):	$(OBJ)
+$(ARUMEXE): $(OBJ)
 	$(CXX) -o $@ $(CXXFLAGS) $(DEBUGFLAGS) $@.o $(ARCHIVE)
+
+$(TESTEXE): $(OBJ)
+	$(CXX) -o $@ $(CXXFLAGS) $(DEBUGFLAGS) $@.o 
 
 $(OBJ):	$(SRC)
 
 rmexe:
-	$(RM) -rf $(EXE)
+	$(RM) -rf $(ARUMEXE) $(TESTEXE)
 
 rmobj:
 	$(RM) -rf $(OBJ) 
