@@ -1,0 +1,79 @@
+
+Author: Sisinty Sasmita patra
+
+Test driver for arum:
+
+This section describes a Python script for arum which automates testing. This script reads testcase line by line from a file called testcases_arum.txt which consists of test name and expected usertime. Later, we will be extending this for other parameters such as system time. 
+
+For examples, the following shows the contents of the test cases file.
+
+LoopTest 2.6
+Permutation 0.0
+
+Our python script parses the above testcases using split utility into test name and expected user time. 
+
+Our script then prepares a command variable in the form "./Arum test_name". This command is given 
+as input to popen2 utility. popen2 executes the command as a sub-process and returns the file objects
+fin and fout. After executing it gives output in the following form for the example : LoopTest.
+
+	sasmita@sasmita-VirtualBox:~/OS/ProjectTest3/arum/tools$ ./Arum LoopTest
+	non-option ARGV-elements: LoopTest 
+	User time is 2.5 seconds
+	System time is 0.1 seconds
+
+The above lines can be read using the file objects (fout). It reads line by line and searches for 'User time' and then parse this line with 'User time', using the split function to get the user time (in seconds). We used float() function to convert string to float data type.
+
+At this point we have output and expected output. The following code validates the user time, by comparing user time with expected user time. Since both the results are in float, we have to take square root difference of them and compare it to a threshold value such as 0.001. we used a threshold value of 0.001 for validation.
+
+Here is a sample result, after validation:
+
+	sasmita@sasmita-VirtualBox:~/OS/ProjectTest3/arum/tools$ python arum_test.py 
+	LoopTest  Failed.
+		Test result: user time:  2.4
+	    	    Expected user time:  2.6
+	Permutation  Passed.
+
+
+If a test is passed, it only displays test passed but incase of failure, the output describes how it failed by displaying test output and expected output.  
+
+Following is the full python code used for arum test automation.
+
+# Test driver for arum
+# Author : Sisinty Sasmita Patra
+
+import popen2
+import shlex
+
+fr = open('testcases_arum.txt', 'r')
+testcases = fr.readlines()
+fr.close()
+
+# For each test case
+for testcase in testcases:
+
+	# Parsing the test_name and expected outputs
+	a = shlex.split(testcase);
+	test_name = a[0];
+	expected_usertime = float(a[1]);
+
+	# Preparing command in the form of : "./Arum TestCase". E.g: "./Arum Permutation"
+	command = './Arum ' + test_name;
+
+	fout, fin = popen2.popen2(command)
+	fin.close();
+
+	output_lines = fout.readlines();
+	fout.close();
+	
+	for output_line in output_lines:
+		if 'User time' in output_line:
+			u = shlex.split(output_line);
+			usertime  = float(u[3]);
+			
+	# Validating output and expected output
+	if ((usertime - expected_usertime) ** 2) < 0.001:
+                print test_name, " Passed"
+	else:
+		print test_name, " Failed"
+
+		

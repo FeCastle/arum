@@ -91,6 +91,7 @@ Arch::parseEvent(EventNode * e)
    char cAddr[MAX_ADDR_AS_CHAR_LEN];
    char tempName[MAX_LINE_LEN];   
 
+
    // Make sure Architecture is supported
    if (this->iterator == NULL || this->archId == NONSUPPORT_ID) {
       fprintf(stderr, "Error:  Iterator is not set.  Unknown architecture.\n");
