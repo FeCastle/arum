@@ -1,11 +1,11 @@
 all:
-	latex summary
-	dvips summary
-	ps2pdf summary.ps
+	latex arum
+	dvips arum
+	ps2pdf arum.ps
 
 clean:
-	rm -f summary.log
-	rm -f summary.aux
-	rm -f summary.dvi
-	rm -f summary.ps
-	rm -f summary.pdf
+	rm -f arum.log
+	rm -f arum.aux
+	rm -f arum.dvi
+	rm -f arum.ps
+	rm -f arum.pdf
