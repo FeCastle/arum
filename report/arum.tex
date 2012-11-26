@@ -4,6 +4,7 @@
 \usepackage{fancyvrb}
 \usepackage{colortbl}
 \usepackage{graphicx}
+\usepackage{url}
 
 \title{Arm ARUM with Dynamic Instrumentation}
 \author{Dejun Qian, Deron Jensen, Amritha Nambiar, Sisinty Sasmita Patra\\Department of Computer Science\\Portland State University\\Portland, OR\\dejun@pdx.edu}
@@ -18,7 +19,7 @@ Based on the initial implementation, we make ARUM, an Application Resource Usage
 % Include the motivation for your work, your approach, your goals, and a short summary of what you found/achieved/tested.
 \section{Introduction}
 \label{sec:introduction}
-Arum is a light-weight performance measuring tool for applications, system and environment. In this project, we focus on extending Arum to profile applications on binary level. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
+Arum is a light-weight performance measuring tool for applications, system and environment \cite{bib:knapp}. In this project, we focus on extending Arum to profile applications on binary level. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \newline
 \textbf{Build and Make existing code}
 \begin{enumerate}
@@ -158,11 +159,16 @@ There are several tests that still need to be implemented to fully test all the 
 \end{enumerate}
 
 % Follow a standard ACM format for your references.  You have examples in the papers you have read.
-\begin{thebibliography}{9}
-\bibitem{buck}
-Buck, B., Hollingsworth, J. \emph{An API for Runtime Code Patching}. Computer Science Department: University of Maryland. 
-\bibitem{knapp}
-Knapp, R. L., Pase, D. M., Karavanic, K. L. \emph{ARUM: Application Resource Usage Monitor}.  Computer Science Department:  Portland State University.
-\end{thebibliography}
+\bibliographystyle{acm}
+\bibliography{reference}
+
+%\begin{thebibliography}{9}
+%\bibitem{bib:dyninst}
+%\emph{http://www.dyninst.org}
+%\bibitem{buck}
+%Buck, B., Hollingsworth, J. \emph{An API for Runtime Code Patching}. Computer Science Department: University of Maryland. 
+%\bibitem{bib:knapp}
+%Knapp, R. L., Pase, D. M., Karavanic, K. L. \emph{ARUM: Application Resource Usage Monitor}.  Computer Science Department:  Portland State University.
+%\end{thebibliography}
 
 \end{document}

@@ -1,5 +1,8 @@
 all:
 	latex arum
+	bibtex arum
+	latex arum
+	latex arum
 	dvips arum
 	ps2pdf arum.ps
 
