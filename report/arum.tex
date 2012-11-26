@@ -5,18 +5,19 @@
 \usepackage{colortbl}
 \usepackage{graphicx}
 
-\title{Summary for Arum Development}
+\title{Arm ARUM with Dynamic Instrumentation}
 \author{Dejun Qian, Deron Jensen, Amritha Nambiar, Sisinty Sasmita Patra\\Department of Computer Science\\Portland State University\\Portland, OR\\dejun@pdx.edu}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-This report summaries what have been done to extend the functionality of Arum.
+Based on the initial implementation, we make ARUM, an Application Resource Usage Moniter for multi-core and multi-processor systems, capable of operating on application binaries, measuring the performance and resource usage at function level. Dyninst, a dynamic instrument library, is adopted to help communicate with application binaries at run time. This report presents how ARUM is enhanced, and what can the improved ARUM give. The experiment result shows that with our effert in this project, ARUM can give the function list, the CPU usage at function level, as well as the function call hierachy without reading the source code.
 \end{abstract}
 
 % Include the motivation for your work, your approach, your goals, and a short summary of what you found/achieved/tested.
 \section{Introduction}
+\label{sec:introduction}
 Arum is a light-weight performance measuring tool for applications, system and environment. In this project, we focus on extending Arum to profile applications on binary level. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \newline
 \textbf{Build and Make existing code}
@@ -46,6 +47,7 @@ Arum is a light-weight performance measuring tool for applications, system and e
 
 % Explain your design / languages, libraries, and tools used, experimental design.
 \section{Methodology}
+\label{sec:methodology}
 For ARUM, we looked at gprof style of output and Dyninst for dynamic instrumentation.  First, we needed to organize the ARUM code into a solid make and build exisiting tests with the ARUM code (not copies of the code).   Additionally we needed test cases for the new functionality, and a driver to test the programs.
 
 The pseudo-code for the dynamic instrumentation is as follows:
@@ -117,6 +119,7 @@ To test this feature, we designed a test program which use noticable use time an
 
 % This should NOT be raw data or code listings.  Instead you should present the key results from your work.  Be guided by the papers you have read this quarter - in cases where it is necessary for understanding, a small section of code might be listed, separate from the text, but more commonly an algorithm might be shown.  Results are not long tables of data, rather, one or two graphs, or tables with key rows or columns highlighted or italicized.
 \section{Results}
+\label{sec:results}
 The result for the experiment is shown in fig \ref{fig:orig} - fig \ref{fig:trace}. Fig \ref{fig:orig} shows the result of the original version of Arum we get from the project assignment. From this point, we only get the user time and system time of the whole program. There is no value to have this information to improve the performance of the program, as it didn't give us where does the program need to be improved. Fig \ref{fig:list} is the result of the function list of the program output by the new version of Arum which is extended by this project. The is the first step of our implementation. This list can give us a general idea about the size of the program. The more functions the program has, the more complex the program is. Fig \ref{fig:trace} shows the execution trace of the program. The information includes the beginning time and end time of each function of both user time and system time as well as watch time. With these information, we can figure out which function is called more and need more attension.
 \begin{figure}
 \begin{center}
@@ -142,6 +145,7 @@ The result for the experiment is shown in fig \ref{fig:orig} - fig \ref{fig:trac
 
 % Based on what you have so far, what can you conclude?  What cool ideas did you think up but not have time to implement so far?
 \section{Conclusions and Future Work}
+\label{sec:conclusion}
 There is still a great deal of opportunity to improve ARUM.   One of the future goals should be to allow ARUM to run on other hardware.  The kernel module currently only supports a single architecture (Intel-15-6).  Adding the Dyninst modules to the build is extremely difficult.  Dyninst requires much work to install on various architectures and platforms.   Currently the Dyninst is compiled and commited with the project.  It should be added as a separate module outside of the project.  Additionally the ARUM build should link with the location of the Dyninst.
 \newline
 The current instrumentation works, but needs to do some formatting of the output.  The data is available, but there may be other ways to present the information to the user of the program.
