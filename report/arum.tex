@@ -21,7 +21,9 @@ Based on the initial implementation, we make ARUM, an Application Resource Usage
 \label{sec:introduction}
 The performance data for both systems and applications plays a critical role in determining the causes of the poor performance of the applications, suggesting the ways to improve the applications, and providing baseline to comparing applications. Among a bunch of performance measuring tools, ARUM provides a unique all-in-one solution for collecting a variety of performance data with a single tool, while still keeping itself lightweight, easy-to-use. ARUM could do four measurements: process and thread level resource usage, architecture specific event counting, application level measurements, and measurements of the ambient environment. It does not need recompile, relink the application or change the source code of the application \cite{bib:knapp}.
 
-However, in the initial implementation, only the first two measurement components have been done. In this project, we focus on extending Arum to profile applications on binary level \cite{bib:dyninstweb}. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
+However, in the initial implementation, only the first two measurement components have been done. In this project, we manage to implement the third one, which focus on extending ARUM to measure the performance of applications. Application level measurement give insight into the performance of an application. The measurement range from course-grained to fine-grained. For course-grained measurement, the overhead of the tool will be relatively lower, and will not affect the original behavier of the application. The cost of the least perturbation is the lack of detailed performance information. The initial version we got\footnote{\texttt{\url{http://web.cecs.pdx.edu/~cs533acc/tiptop.git}}} .
+
+ on binary level \cite{bib:dyninstweb}. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \newline
 \textbf{Build and Make existing code}
 \begin{enumerate}
