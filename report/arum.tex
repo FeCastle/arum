@@ -15,10 +15,7 @@
 This report summaries what have been done to extend the functionality of Arum.
 \end{abstract}
 
-% 1.  What you have contributed Arum/Tiptop.
-% 2.  What challenges you faced or lessons learned.
-% 3.  What you plan to complete before project is due.
-% 4.  What future work can be done by another group.
+% Include the motivation for your work, your approach, your goals, and a short summary of what you found/achieved/tested.
 \section{Introduction}
 Arum is a light-weight performance measuring tool for applications, system and environment. In this project, we focus on extending Arum to profile applications on binary level. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \newline
@@ -47,6 +44,7 @@ Arum is a light-weight performance measuring tool for applications, system and e
 \item Test a loop and recursive function call.
 \end{enumerate}
 
+% Explain your design / languages, libraries, and tools used, experimental design.
 \section{Methodology}
 For ARUM, we looked at gprof style of output and Dyninst for dynamic instrumentation.  First, we needed to organize the ARUM code into a solid make and build exisiting tests with the ARUM code (not copies of the code).   Additionally we needed test cases for the new functionality, and a driver to test the programs.
 
@@ -117,6 +115,7 @@ To test this feature, we designed a test program which use noticable use time an
 \end{center}
 \end{figure}
 
+% This should NOT be raw data or code listings.  Instead you should present the key results from your work.  Be guided by the papers you have read this quarter - in cases where it is necessary for understanding, a small section of code might be listed, separate from the text, but more commonly an algorithm might be shown.  Results are not long tables of data, rather, one or two graphs, or tables with key rows or columns highlighted or italicized.
 \section{Results}
 The result for the experiment is shown in fig \ref{fig:orig} - fig \ref{fig:trace}. Fig \ref{fig:orig} shows the result of the original version of Arum we get from the project assignment. From this point, we only get the user time and system time of the whole program. There is no value to have this information to improve the performance of the program, as it didn't give us where does the program need to be improved. Fig \ref{fig:list} is the result of the function list of the program output by the new version of Arum which is extended by this project. The is the first step of our implementation. This list can give us a general idea about the size of the program. The more functions the program has, the more complex the program is. Fig \ref{fig:trace} shows the execution trace of the program. The information includes the beginning time and end time of each function of both user time and system time as well as watch time. With these information, we can figure out which function is called more and need more attension.
 \begin{figure}
@@ -141,6 +140,7 @@ The result for the experiment is shown in fig \ref{fig:orig} - fig \ref{fig:trac
 \end{center}
 \end{figure}
 
+% Based on what you have so far, what can you conclude?  What cool ideas did you think up but not have time to implement so far?
 \section{Conclusions and Future Work}
 There is still a great deal of opportunity to improve ARUM.   One of the future goals should be to allow ARUM to run on other hardware.  The kernel module currently only supports a single architecture (Intel-15-6).  Adding the Dyninst modules to the build is extremely difficult.  Dyninst requires much work to install on various architectures and platforms.   Currently the Dyninst is compiled and commited with the project.  It should be added as a separate module outside of the project.  Additionally the ARUM build should link with the location of the Dyninst.
 \newline
@@ -153,11 +153,12 @@ There are several tests that still need to be implemented to fully test all the 
 \item Plan to use Arum as well as a widely-used profiling tool like gprof on the benchmark test application to compare and measure the efficiency,	overheads or improvements that can be done on Arum. 
 \end{enumerate}
 
-\section{References}
+% Follow a standard ACM format for your references.  You have examples in the papers you have read.
 \begin{thebibliography}{9}
 \bibitem{buck}
 Buck, B., Hollingsworth, J. \emph{An API for Runtime Code Patching}. Computer Science Department: University of Maryland. 
 \bibitem{knapp}
 Knapp, R. L., Pase, D. M., Karavanic, K. L. \emph{ARUM: Application Resource Usage Monitor}.  Computer Science Department:  Portland State University.
 \end{thebibliography}
+
 \end{document}
