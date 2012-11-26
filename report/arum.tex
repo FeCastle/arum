@@ -7,7 +7,7 @@
 \usepackage{url}
 
 \title{Arm ARUM with Dynamic Instrumentation}
-\author{Dejun Qian, Deron Jensen, Amritha Nambiar, Sisinty Sasmita Patra\\Department of Computer Science\\Portland State University\\Portland, OR\\dejun@pdx.edu}
+\author{Dejun Qian, Deron Jensen, Amritha Nambiar, Sisinty Sasmita Patra\\Department of Computer Science\\Portland State University\\Portland, OR 97201\\dejun@pdx.edu}
 
 \begin{document}
 \maketitle
@@ -19,7 +19,9 @@ Based on the initial implementation, we make ARUM, an Application Resource Usage
 % Include the motivation for your work, your approach, your goals, and a short summary of what you found/achieved/tested.
 \section{Introduction}
 \label{sec:introduction}
-Arum is a light-weight performance measuring tool for applications, system and environment \cite{bib:knapp}. In this project, we focus on extending Arum to profile applications on binary level \cite{bib:dyninstweb}. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
+The performance data for both systems and applications plays a critical role in determining the causes of the poor performance of the applications, suggesting the ways to improve the applications, and providing baseline to comparing applications. Among a bunch of performance measuring tools, ARUM provides a unique all-in-one solution for collecting a variety of performance data with a single tool, while still keeping itself lightweight, easy-to-use. ARUM could do four measurements: process and thread level resource usage, architecture specific event counting, application level measurements, and measurements of the ambient environment. It does not need recompile, relink the application or change the source code of the application \cite{bib:knapp}.
+
+However, in the initial implementation, only the first two measurement components have been done. In this project, we focus on extending Arum to profile applications on binary level \cite{bib:dyninstweb}. We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \newline
 \textbf{Build and Make existing code}
 \begin{enumerate}
