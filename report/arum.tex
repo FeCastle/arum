@@ -13,7 +13,7 @@
 \maketitle
 
 \begin{abstract}
-Based on the initial implementation, we make ARUM, an Application Resource Usage Moniter for multi-core and multi-processor systems, capable of operating on application binaries, measuring the performance and resource usage at function level. Dyninst, a dynamic instrumentation library, is adopted to help communicate with application binaries at run time. This report presents how we improve ARUM. Experiment result shows that, with our effert in this project, ARUM is enhanced in threefold, 1) provide the CPU usage not only at program level but also at function level. 2) provide the function call hierachy without reading the source code. 3) list the function implemented in the application.
+Based on the initial implementation, we make ARUM, an Application Resource Usage Moniter for multi-core and multi-processor systems, capable of operating on application binaries, measuring the performance and resource usage at function level. Dyninst, a dynamic instrumentation library, is adopted to help communicate with application binaries at run time. This report presents how we improve ARUM. Experiment result shows that, with our effert in this project, ARUM is enhanced in forthfold, 1) provide the CPU usage not only at program level but also at function level. 2) give how many times each function is called. 3) provide the function call hierachy without reading the source code. 4) list the function implemented in the application.
 \end{abstract}
 
 % Include the motivation for your work, your approach, your goals, and a short summary of what you found/achieved/tested.
@@ -23,8 +23,13 @@ The performance data for both systems and applications plays a critical role in 
 
 However, in the initial implementation, only the first two measurement components have been done. In this project, we manage to implement the third one, which focus on extending ARUM to measure the performance of applications. Application level measurement give insight into the performance of an application. The measurement range from course-grained to fine-grained. For course-grained measurement, the overhead of the tool will be relatively lower, and will not affect the original behavier of the application. The cost of the least perturbation is the lack of detailed performance information. For example, if we measure a application in course-grained mode, then we only get the information about the execution of the application as a whole. The information about some certain pieces of code, like a function, is unknown in this mode. In contrast, for fine-grained measurement, we can get more detailed information about the execution of the application at the cost of higer overhead of the tool. The initial version\footnote{\texttt{\url{http://web.cecs.pdx.edu/~cs533acc/arum.git}}} we got to begin with have done the course-grained measurement. Our work in this project is mainly related to fine-grained measurement.
 
-In order to avoid recompiling, relinking, and operate on application binary, we adopt Dyninst \cite{bib:dyninstweb} to communicate with the binary code of the application in testing.
+In order to avoid recompiling, relinking, and operate on application binary, we adopt Dyninst \cite{bib:dyninstweb} to communicate with the binary code of the application in testing. Dyninst is \cite{bib:anapi} a post-compiler program manipulation tool which provides a C++ class library for program instrumentation. Using this library, it's possible to instrumentate and modify application programs during execution. Using Dyninst, we successfully extend ARUM with four useful features: 1) provide the CPU usage at both program level and function level. 2) give the calling frequency of each function. 3) provide the function call hierachy. 4) list the functions implemented in the application.
 
+The rest of the paper is orgnized as follows. Section \ref{sec:methodology} introduce our implementation to make ARUM provide fine-grained measurement of application binaries. Section \ref{sec:results} gives the experiment result of our implementation. Section \ref{sec:conclusion} conclude our work and give some thinking towards the future.
+
+% Explain your design / languages, libraries, and tools used, experimental design.
+\section{Methodology}
+\label{sec:methodology}
 We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \newline
 \textbf{Build and Make existing code}
@@ -52,9 +57,6 @@ We use Dyninst to inject binary code into the application binary. We extend Arum
 \item Test a loop and recursive function call.
 \end{enumerate}
 
-% Explain your design / languages, libraries, and tools used, experimental design.
-\section{Methodology}
-\label{sec:methodology}
 For ARUM, we looked at gprof style of output and Dyninst for dynamic instrumentation.  First, we needed to organize the ARUM code into a solid make and build exisiting tests with the ARUM code (not copies of the code).   Additionally we needed test cases for the new functionality, and a driver to test the programs.
 
 The pseudo-code for the dynamic instrumentation is as follows:
