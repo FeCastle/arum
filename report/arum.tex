@@ -30,9 +30,10 @@ The rest of the paper is orgnized as follows. Section \ref{sec:methodology} intr
 % Explain your design / languages, libraries, and tools used, experimental design.
 \section{Methodology}
 \label{sec:methodology}
-We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
-\newline
-\textbf{Build and Make existing code}
+This section presents what we have done and how we did it to make ARUM capable of fine-grained measurement, as well as let the code structure more clear and easy to mantain.
+
+\subsection{Build and Make existing code}
+On the first stage of our work, we tried to understand the initial version of ARUM code, reorganize the source code structure, add more help message and error message to make ARUM more robust and user-friendly. Basically, the following work is done,
 \begin{enumerate}
 \item Reorganized code into /src /test /tools with docs and makefiles.  Tests are now merged into test directories and linked to ARUM libraries.
 \item Added Makefile and instructions for Hardware counter kernel module.
@@ -40,7 +41,9 @@ We use Dyninst to inject binary code into the application binary. We extend Arum
 \item Added accurate "usage" message to output.
 \item Added environment variable for HwCtr module configuration and '-r' flag to allow ARUM to run on unsupported hardware, or outside of the "make" area.
 \end{enumerate}
-\textbf{Dynamic Instrumentation}
+
+\subsection{Dynamic Instrumentation}
+We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \begin{enumerate}
 \item Build Dyninst library and integrate it into Arum.
 \item List all the functions in the application along with the begining and end address of the code of each function.
@@ -50,6 +53,7 @@ We use Dyninst to inject binary code into the application binary. We extend Arum
 \item Generate the profiling report.
 \item Designed a program to consume both measurable user time and measurable system time for testing purpose.
 \end{enumerate}
+
 \textbf{Testing}
 \begin{enumerate}
 \item Test ARUM command line options and existing functionality.
