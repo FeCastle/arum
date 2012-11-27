@@ -152,8 +152,8 @@ main( int argc, char* argv[], char* envp[] )
        rv = cntrs.closeDevice();
     }
 
-    printf("User time    %.4lfs\n", childUsage.user_time());
-    printf("System time  %.4lfs\n", childUsage.sys_time());
+    printf("User time    %.4lf seconds\n", childUsage.user_time());
+    printf("System time  %.4lf seconds\n", childUsage.sys_time());
     //printf("Elapsed time is %.1lf seconds\n", e-s);
 
     if (arum.resourceCounters) {
