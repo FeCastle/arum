@@ -79,9 +79,33 @@ handle->insertSnippet(*incCount,*entry_point);
 Up to now, we can only instrument the manually specified function. With the code shown bellow, we can get the function list in the application and apply the above method to each of the function in the list. This way, we can automatically instrument all the functions implemented in the mutatee.
 \begin{Verbatim}[frame=single]
 image->findFunction(``main'', mainfuncs);
-mainfuncs[0]->getModule();
-return aOut->getProcedures();
+module = mainfuncs[0]->getModule();
+return module->getProcedures();
 \end{Verbatim}
+
+The pseudo-code for the dynamic instrumentation is as follows:
+\begin{Verbatim}[frame=single]
+line 1: prepare the code for injecting
+line 2: list all functions
+line 3: for each function
+line 4:   insert the code to the begining
+line 5:   insert the code to the end
+line 6:
+line 7: fork and exec the revised binary
+line 8: send the result to Arum
+line 9: 
+line 10: generate the report
+\end{Verbatim}
+
+For the purpose of profiling the application in binary image, we have collected enough information for further process. Based on these information, we can
+\begin{enumerate}
+\item recover the executing sequence of each function, when it begins and when it finishs.
+\item give how many time does each function run
+\item give how long does each function instance take to run in user time, system time and watch time.
+\item give the average time each function takes to run.
+\item give the calling hierarchy of the functions in the application.
+\end{enumerate}
+These task can be done by project 2. Using a good visualization technique will help Arum to present these information in a user friendly way.
 
 After downloading Dyninst\footnote{\texttt{\url{http://www.dyninst.org/sites/default/files/downloads/dyninst/dyninst_linux_amd64_7.0.tar.gz}}}, we need install libiberty if working on linux server at PSU. The appropriate environment variables should be set according to where you put the libraries. Our settings are shown bellow,
 
@@ -131,20 +155,6 @@ stack
 
 For ARUM, we looked at gprof style of output and Dyninst for dynamic instrumentation.  First, we needed to organize the ARUM code into a solid make and build exisiting tests with the ARUM code (not copies of the code).   Additionally we needed test cases for the new functionality, and a driver to test the programs.
 
-The pseudo-code for the dynamic instrumentation is as follows:
-\begin{Verbatim}[frame=single]
-line 1: prepare the code for injecting
-line 2: list all functions
-line 3: for each function
-line 4:   insert the code to the begining
-line 5:   insert the code to the end
-line 6:
-line 7: fork and exec the revised binary
-line 8: send the result to Arum
-line 9: 
-line 10: generate the report
-\end{Verbatim}
-
 The task of profile the application in binary mode is not trivial. We encountered the following challenges:
 \begin{enumerate}
 \item ARUM source code was duplicated and in several dispserse directories.  
@@ -157,16 +167,6 @@ The task of profile the application in binary mode is not trivial. We encountere
 \item Handle recursive function calls.
 \end{enumerate}
 
-For the purpose of profiling the application in binary image, we have collected enough information for further process. Based on these information, we can
-\begin{enumerate}
-\item recover the executing sequence of each function, when it begins and when it finishs.
-\item give how many time does each function run
-\item give how long does each function instance take to run in user time, system time and watch time.
-\item give the average time each function takes to run.
-\item give the calling hierarchy of the functions in the application.
-\end{enumerate}
-These task can be done by project 2. Using a good visualization technique will help Arum to present these information in a user friendly way.
-\newline
 To test this feature, we designed a test program which use noticable use time and system time. The functions implemented in the test program is listed in Fig \ref{fig:fake} - Fig \ref{fig:main}. In fig \ref{fig:fake}, we implement a function which will never be called in the program. Fig \ref{fig:foo} implement a funtion which spend competable time in user mode and kernel mode. Fig \ref{fig:recursive} is used to test recurseve functions. Fig \ref{fig:main} is the main function of the program.
 
 \begin{table}[th]
