@@ -57,7 +57,19 @@ On the first stage of our work, we tried to understand the initial version of AR
 How Dyninst works is illustrated in Figure \ref{fig:dyninst}\footnote{\texttt{from Bryan's paper \cite{bib:anapi}}}. A \emph{point} is a location in a program where instrumentation can be inserted. A \emph{snippet} is a bit of binary code to be inserted into a point. The snippet is first prepared and dynamically compiled in the mutator's process space. The mutator then copies the snippet and other necessary libraries into mutatee's process space by using Linux's ptrace service. It also slightly revises the code of the \emph{point} in the mutatee to call the snippet. This way, Dyninst can insert the code into and control the execution of the mutatee.
 
 \noindent \newline\textbf{Instrument Using Dyninst}\newline
-\indent By passing the application name to ARUM as an argument, ARUM can open the binary file, parse the ELF format, and create an image to represent the application executable binary. The code used to achieve this goal is shown bellow,
+\indent Figure \ref{fig:workflow} gives a general idea about how Dyninst works with ARUM. To do instrumentation with Dyninst, we should first integrate the Dyninst library into ARUM, then use the APIs provided by Dyninst to create a image of the application binary, prepare and insert the snippets into the specified points in the application image, then save the modified image as the new modified application binary, run the new executable binary. At this point, we should have two program running, one is the ARUM program, which is the mutator, the other is the modified application binary, which is the mutatee. The snippet in the mutatee is responsible to collect the performance data of the mutatee and send it to ARUM. After getting the data from mutatee, ARUM precess them and generate the performance report of the mutatee.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{workflow.eps}
+\caption{Workflow of ARUM}
+\label{fig:workflow}
+\end{center}
+\end{figure}
+
+How the snippets are designed and where should they be inserted is the most important two question when we design our approach. 
+
+By passing the application name to ARUM as an argument, ARUM can open the binary file, parse the ELF format, and create an image to represent the application executable binary. The code used to achieve this goal is shown bellow,
 \begin{Verbatim}[frame=single]
 handle = bpatch.openBinary(app_name);
 image = handle->getImage();
@@ -81,20 +93,6 @@ Up to now, we can only instrument the manually specified function. With the code
 image->findFunction(``main'', mainfuncs);
 module = mainfuncs[0]->getModule();
 return module->getProcedures();
-\end{Verbatim}
-
-The pseudo-code for the dynamic instrumentation is as follows:
-\begin{Verbatim}[frame=single]
-line 1: prepare the code for injecting
-line 2: list all functions
-line 3: for each function
-line 4:   insert the code to the begining
-line 5:   insert the code to the end
-line 6:
-line 7: fork and exec the revised binary
-line 8: send the result to Arum
-line 9: 
-line 10: generate the report
 \end{Verbatim}
 
 For the purpose of profiling the application in binary image, we have collected enough information for further process. Based on these information, we can
