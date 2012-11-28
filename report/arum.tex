@@ -43,7 +43,21 @@ On the first stage of our work, we tried to understand the initial version of AR
 \end{enumerate}
 
 \subsection{Dynamic Instrumentation}
-We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
+\textbf{Dyninst}\newline
+\indent Dyninst is a library developed at University of Maryland and University of Wisconsin Madison. It is a dynamic instrumentation tool which operates on application binary only, without re-compiling, re-linking or even re-executing. This library permits the insertion of code into an application that is either running or on disk. Basically, there are two ways to insert code into the application binary, namely, dynamic instrumentation and static instrumentation. Dynamic instrumentation inserts code into a running application while static instrumentation inserts code into an executable file or library \cite{bib:dyninstmanual}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{dyninst.eps}
+\caption{Structure of Dyninst}
+\label{fig:dyninst}
+\end{center}
+\end{figure}
+
+How Dyninst works is illustrated in Figure \ref{fig:dyninst}\footnote{\texttt{from Bryan's paper \cite{bib:anapi}}}. A \emph{point} is a location in a program where instrumentation can be inserted. A \emph{snippet} is a bit of binary code to be inserted into a point. The snippet is first prepared and dynamically compiled in the mutator's process space. The mutator then copies the snippet and other necessary libraries into mutatee's process space by using Linux's ptrace service. It also slightly revises the code of the \emph{point} in the mutatee to call the snippet. This way, Dyninst can insert the code into and control the execution of the mutatee.
+
+\noindent \newline\textbf{Instrument Using Dyninst}\newline
+\indent We use Dyninst to inject binary code into the application binary. We extend Arum in the following way:
 \begin{enumerate}
 \item Build Dyninst library and integrate it into Arum.
 \item List all the functions in the application along with the begining and end address of the code of each function.
@@ -53,6 +67,8 @@ We use Dyninst to inject binary code into the application binary. We extend Arum
 \item Generate the profiling report.
 \item Designed a program to consume both measurable user time and measurable system time for testing purpose.
 \end{enumerate}
+
+stack
 
 \textbf{Testing}
 \begin{enumerate}
@@ -101,34 +117,6 @@ These task can be done by project 2. Using a good visualization technique will h
 \newline
 To test this feature, we designed a test program which use noticable use time and system time. The functions implemented in the test program is listed in Fig \ref{fig:fake} - Fig \ref{fig:main}. In fig \ref{fig:fake}, we implement a function which will never be called in the program. Fig \ref{fig:foo} implement a funtion which spend competable time in user mode and kernel mode. Fig \ref{fig:recursive} is used to test recurseve functions. Fig \ref{fig:main} is the main function of the program.
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.9\textwidth]{fig4.eps}
-\caption{fake function}
-\label{fig:fake}
-\end{center}
-\end{figure}
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.9\textwidth]{fig5.eps}
-\caption{foo function}
-\label{fig:foo}
-\end{center}
-\end{figure}
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.6\textwidth]{fig6.eps}
-\caption{recursive function}
-\label{fig:recursive}
-\end{center}
-\end{figure}
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.5\textwidth]{fig7.eps}
-\caption{main function}
-\label{fig:main}
-\end{center}
-\end{figure}
 
 % This should NOT be raw data or code listings.  Instead you should present the key results from your work.  Be guided by the papers you have read this quarter - in cases where it is necessary for understanding, a small section of code might be listed, separate from the text, but more commonly an algorithm might be shown.  Results are not long tables of data, rather, one or two graphs, or tables with key rows or columns highlighted or italicized.
 \section{Results}
