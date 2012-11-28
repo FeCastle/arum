@@ -57,7 +57,33 @@ On the first stage of our work, we tried to understand the initial version of AR
 How Dyninst works is illustrated in Figure \ref{fig:dyninst}\footnote{\texttt{from Bryan's paper \cite{bib:anapi}}}. A \emph{point} is a location in a program where instrumentation can be inserted. A \emph{snippet} is a bit of binary code to be inserted into a point. The snippet is first prepared and dynamically compiled in the mutator's process space. The mutator then copies the snippet and other necessary libraries into mutatee's process space by using Linux's ptrace service. It also slightly revises the code of the \emph{point} in the mutatee to call the snippet. This way, Dyninst can insert the code into and control the execution of the mutatee.
 
 \noindent \newline\textbf{Instrument Using Dyninst}\newline
-\indent After downloading Dyninst\footnote{\texttt{\url{http://www.dyninst.org/sites/default/files/downloads/dyninst/dyninst_linux_amd64_7.0.tar.gz}}}, we need install libiberty if working on linux server at PSU. The appropriate environment variables should be set according to where you put the libraries. Our settings are shown bellow,
+\indent By passing the application name to ARUM as an argument, ARUM can open the binary file, parse the ELF format, and create an image to represent the application executable binary. The code used to achieve this goal is shown bellow,
+\begin{Verbatim}[frame=single]
+handle = bpatch.openBinary(app_name);
+image = handle->getImage();
+\end{Verbatim}
+
+To instrument the application, we must first decide what data want to be collected, then proper snippet should be designed carefully. This is the most chanllege and most important task. Dyninst provide a bunch of APIs to help the user to create the snippets. These APIs can support bisic arithmetic computations, general assignment, conditional assignment, loop, function call and etc.. Using these APIs to write snippet code is very different from writing code using high level language. The code shown bellow gives an example of snippet which implementing increasement functionality.
+\begin{Verbatim}[frame=single]
+count = handle->malloc(*(image->findType(``int'')));
+countPlusOne = new BPatch_arithExpr(BPatch_plus, *count, BPatch_constExpr(1));
+incCount = new BPatch_arithExpr(BPatch_assign, *count, *countPlusOne);
+\end{Verbatim}
+
+Having the snippet ready, we can use Dyninst to locate the position where we want to insert the snippet, and then insert our snippet there. After that, when the application runs, our snippet code will get executing at certain position of the application. Of course, before we call Dyninst APIs, we should give the information about which function we are working on. The sample code to insert the above snippet is shown bellow,
+\begin{Verbatim}[frame=single]
+entry_point = function->findPoint(BPatch_entry);
+handle->insertSnippet(*incCount,*entry_point);
+\end{Verbatim}
+
+Up to now, we can only instrument the manually specified function. With the code shown bellow, we can get the function list in the application and apply the above method to each of the function in the list. This way, we can automatically instrument all the functions implemented in the mutatee.
+\begin{Verbatim}[frame=single]
+image->findFunction(``main'', mainfuncs);
+mainfuncs[0]->getModule();
+return aOut->getProcedures();
+\end{Verbatim}
+
+After downloading Dyninst\footnote{\texttt{\url{http://www.dyninst.org/sites/default/files/downloads/dyninst/dyninst_linux_amd64_7.0.tar.gz}}}, we need install libiberty if working on linux server at PSU. The appropriate environment variables should be set according to where you put the libraries. Our settings are shown bellow,
 
 \begin{Verbatim}[frame=single]
 export LD_LIBRARY_PATH=../bprobe/lib:$LD_LIBRARY_PATH
