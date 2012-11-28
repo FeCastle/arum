@@ -67,7 +67,9 @@ How Dyninst works is illustrated in Figure \ref{fig:dyninst}\footnote{\texttt{fr
 \end{center}
 \end{figure}
 
-How the snippets are designed and where should they be inserted is the most important two question when we design our approach. 
+How the snippets are designed and where should they be inserted is the most important two question when we design our approach. The answer to these two questions depend on what performance we try to moniter. In this project, we try to profile the application program, which means we want to get how long does each function call take and how many time does each fuction is invoked. With this purpose, we designed four snippets: timestamp, isrecursive, preprocess and sendresult. The first one is used to get the timestamp of curcurrent point of execution, we use times() function in Linux. With this function, we can get the user time, system time and watch time. We insert this snippet into the beginning and the end of each function. Preprocess snippet simply collect the time at the beginning and at the end, while sendresult snippet send the result to ARUM.
+
+There is one 
 
 By passing the application name to ARUM as an argument, ARUM can open the binary file, parse the ELF format, and create an image to represent the application executable binary. The code used to achieve this goal is shown bellow,
 \begin{Verbatim}[frame=single]
