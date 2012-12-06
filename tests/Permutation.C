@@ -34,7 +34,7 @@ int permute(char* set, int begin, int end)
 }
 int main()
 {
-    char str[] = "recursion";
+    char str[] = "permutation";
     permute(str, 0, strlen(str));
     printf("various permutations of string done\n");
     return 0;
