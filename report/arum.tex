@@ -188,14 +188,80 @@ In order to solve the problem related to recursive function calls, we can just s
 % This should NOT be raw data or code listings.  Instead you should present the key results from your work.  Be guided by the papers you have read this quarter - in cases where it is necessary for understanding, a small section of code might be listed, separate from the text, but more commonly an algorithm might be shown.  Results are not long tables of data, rather, one or two graphs, or tables with key rows or columns highlighted or italicized.
 \section{Results}
 \label{sec:results}
-\textbf{Testing}
+
+The results for the experiment is shown in fig \ref{fig:orig} - fig \ref{fig:trace}. Fig \ref{fig:orig} shows the result of the original version of Arum we get from the project assignment. From this point, we only get the user time and system time of the whole program. There is no value to have this information to improve the performance of the program, as it didn't give us where does the program need to be improved. Fig \ref{fig:list} is the result of the function list of the program output by the new version of Arum which is extended by this project. The is the first step of our implementation. This list can give us a general idea about the size of the program. The more functions the program has, the more complex the program is. Fig \ref{fig:trace} shows the execution trace of the program. The information includes the beginning time and end time of each function of both user time and system time as well as watch time. With these information, we can figure out which function is called more and need more attention.
+
+\subsection{Testing}
+
 \begin{enumerate}
+\item Developed pyhton script (ARUM Test Driver) to automate ARUM testing.
 \item Test ARUM command line options and existing functionality.
 \item Test a function call.
 \item Test a loop and recursive function call.
 \end{enumerate}
 
-The result for the experiment is shown in fig \ref{fig:orig} - fig \ref{fig:trace}. Fig \ref{fig:orig} shows the result of the original version of Arum we get from the project assignment. From this point, we only get the user time and system time of the whole program. There is no value to have this information to improve the performance of the program, as it didn't give us where does the program need to be improved. Fig \ref{fig:list} is the result of the function list of the program output by the new version of Arum which is extended by this project. The is the first step of our implementation. This list can give us a general idea about the size of the program. The more functions the program has, the more complex the program is. Fig \ref{fig:trace} shows the execution trace of the program. The information includes the beginning time and end time of each function of both user time and system time as well as watch time. With these information, we can figure out which function is called more and need more attension.
+
+\subsection{ARUM Test Driver}
+
+In this section we describe, ARUM Test Driver, which is a python script used to test ARUM automatically for many test cases. Test cases are given as input to the ARUM test driver in the following format. In each line, we have test name and the expected results from ARUM.\newline
+
+{\bf Test Cases:}
+
+\begin{verbatim}
+Test Name    UserTime  SystemTime  MaxRSS  minFLT  majFLT  inBlock  outBlock
+
+LoopTest     3.620      0.012       600     150      0        16       0
+
+Permutation  0.004      0.004       600     158      0        48       0
+
+Binary       0.000      0.000       600     120      0        0        0
+
+\end{verbatim}
+
+Our script parses each test case into input and the expected outputs. It then prepares a command to run ARUM executable along with the testname. This command is executed using a system utility function popen2.popen3(). The output is parsed in order to get UserTime, SystemTime, maxRSS, minFLT, majFLT, inBlock and outBlock parameters. These outputs are compared with the expected outputs given in the test case. If the outputs and the expected outputs are within the threshold then the test passes. In case of failures, we show the details of why the test got failed by printing the outputs and expected outputs. The following algorithm describes our python test driver for ARUM.\newline
+
+\begin{verbatim}
+
+Algorithm:
+
+For each test case in test cases file
+
+       Parse the test case for input and expected Outputs.
+     
+       Prepare the command which takes Arum executable and the test name.
+        (for e.g. the command will be: "./Arum -r Loop test").
+       
+       Run the above command using a system fumnction utility.
+        (In Python it is popen2.popen3)
+
+       Parse the standard output to get the Results.
+
+       Compare these outputs with the expected outputs.
+       
+         If the outputs and the expected outputs are equal
+              Print TEST is Passed
+         else 
+              Print TEST is Failed
+
+              For the failed test cases:
+                Print outputs and expected outputs
+\end{verbatim}
+
+{\bf Results:}\newline
+
+The result of our test driver are shown in the following fashion. Here LoopTest and Permutation tests passed, and Binary test failed. BinaryTest failed because our Minflt and expected Minflt did not match. 
+
+\begin{verbatim}
+   LoopTest Passed
+
+   Permutation Passed
+
+   Binary failed
+     Minflt           157
+     Expected Minflt  120
+\end{verbatim}
+
+\label{sec:results}
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.8\textwidth]{orig.eps}
