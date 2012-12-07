@@ -193,13 +193,58 @@ The results for the experiment is shown in fig \ref{fig:orig} - fig \ref{fig:tra
 
 \subsection{Testing}
 
+Test cases were developed and tested the following functionalities:
 \begin{enumerate}
-\item Developed pyhton script (ARUM Test Driver) to automate ARUM testing.
 \item Test ARUM command line options and existing functionality.
 \item Test a function call.
 \item Test a loop and recursive function call.
+\item Test cases for multiple cascaded function calls, programs with significant execution time such as prime numbers generation, permutations of string, factorial generation with and without loop, write to file operation in loop,  a fake function to calculate time spent in a loop using difftime utility etc. 
 \end{enumerate}
 
+{\bf Test Cases:}
+\begin{verbatim}
+Test Case	Description
+Binary	        Simple program to convert ascii values to binary
+Loop	        While loop, looping 10000000 times
+FunctionCalls	Cascaded function calls, one of the functions in a loop, another function has loop
+Permutation	Permutations of as string "permutation" using recursion and swap operations
+Primes	        Generate first 50000 prime numbers
+Hello	        Recursive function, a looping function, a function that is never called
+ArumTestSpec	Program used as benchmark,has tests for: 
+                factorial with recursion, factorial with loop, write to file in a loop, permutations of string, 
+                prime numbers generation, a long while loop, a fake function to calculate time spent in a loop using difftime() utility
+\end{verbatim}
+
+TEST RESULTS DATA
+% fig 1
+
+TEST RESULTS FOR CODE OPTIMIZATION
+% fig 2
+
+COMPARE ARUM PROFILING WITH GPROF PROFILING
+
+Arum profile information for factorial program using recursion
+% fig 3
+Major Gprof profile information for factorial program using recursion
+% fig 4
+% fig 5
+
+Arum -r flag to report hardware counters
+
+\begin{verbatim}
+./Arum -r /u/anambiar/OS_PROJECT/arumtowork/arum/tests/Permutation
+various permutations of string done
+User time    0.0080s
+System time  0.0000s
+maxrss  - Max resident set size      596 Kb
+minflt  - Page faults without I/O    156
+majflt  - Page faults with I/O       0
+inblock - File system input          48 blocks
+oublock - File system output         0 blocks
+nvcsw   - Voluntary context switch   8
+nivcsw  - Involuntary context switch 5
+
+\end{verbatim}
 
 \subsection{ARUM Test Driver}
 
