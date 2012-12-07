@@ -194,7 +194,7 @@ The results for the experiment is shown below.   Fig \ref{fig:orig} is result of
 
 \subsection{Testing}
 
-Test cases were developed and tested the following functionalities:
+We developed python script (ARUM Test driver) to automate ARUM testing. Test cases were developed and tested the following functionalities:
 \begin{itemize}
 \item Test ARUM command line options and existing functionality.
 \item Test a function call.
@@ -279,7 +279,7 @@ nivcsw  - Involuntary context switch 5
 
 In this section we describe, ARUM Test Driver, which is a python script used to test ARUM automatically for many test cases. Test cases are given as input to the ARUM test driver in the following format. In each line, we have test name and the expected results from ARUM.\newline
 
-{\bf Test Driver:}
+{\bf Test Cases:}
 
 \begin{verbatim}
 Test Name    UserTime  SystemTime  MaxRSS  minFLT  majFLT  inBlock  outBlock
@@ -303,7 +303,7 @@ For each test case in test cases file
        Parse the test case for input and expected Outputs.
      
        Prepare the command which takes ARUM executable and the test name.
-        (for e.g. the command will be: "./Arum -r Loop test").
+        (for e.g. the command will be: "./Arum -r LoopTest").
        
        Run the above command using a system fumnction utility.
         (In Python it is popen2.popen3)
@@ -326,13 +326,16 @@ For each test case in test cases file
 The result of our test driver are shown in the following fashion. Here LoopTest and Permutation tests passed, and Binary test failed. BinaryTest failed because our Minflt and expected Minflt did not match. 
 
 \begin{verbatim}
-   LoopTest Passed
 
-   Permutation Passed
+spatra@chinstrap:~/arum/tools$ python final_arum_test.py
+LoopTest Passed.
 
-   Binary failed
-     Minflt           157
-     Expected Minflt  120
+Permutation Passed.
+
+Binary failed:
+              Minflt:  157
+     Expected Minflt:  120
+
 \end{verbatim}
 %\begin{figure}
 %\begin{center}
